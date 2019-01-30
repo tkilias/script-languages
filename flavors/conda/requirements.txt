@@ -2,8 +2,6 @@ numpy
 pandas
 cdecimal
 cython
-keras 
-tensorflow 
 seaborn 
 matplotlib 
 nltk 
@@ -16,6 +14,3 @@ statsmodels
 joblib
 pycurl
 python-cjson
-kmodes
-imbalanced-learn
-lifelines
