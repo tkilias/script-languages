@@ -25,26 +25,39 @@ done
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
 TMPDIR=$(mktemp -d `basename $0`_${FLAVOR}_tmpdir.XXXXXXXX)
-
 function cleanup {
     if [ ! -z "$TMPDIR" ]; then
-	rm -rf $TMPDIR
+    	rm -rf $TMPDIR
     fi
 }
+
+trap cleanup EXIT
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
         CORES=$(sysctl -n hw.ncpu)
 else
     	CORES=$(grep processor /proc/cpuinfo | wc -l | tr -d '\n')
 fi
+
 REPNAME=$(echo "$FLAVOR" | tr '[:upper:]' '[:lower:]')
+
+BUILD_DIR=builds/build
+mkdir -p $BUILD_DIR
 echo Using base docker file: Dockerfile.base_$FLAVOR
-docker build . --tag exaudf/baseimage_$REPNAME -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR --build-arg numberOfCores=$CORES || die "Could not create exaudf/baseimage"
+cp -r ext flavors/$FLAVOR/* src $BUILD_DIR
+ls $BUILD_DIR
+(cd $BUILD_DIR && docker build . --tag exaudf/baseimage_$REPNAME -f Dockerfile.base_$FLAVOR --build-arg numberOfCores=$CORES || die "Could not create exaudf/baseimage")
+
 echo Using build docker file: Dockerfile.build_$FLAVOR
-docker build . --tag exaudf/build_$REPNAME -f flavors/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
-trap cleanup EXIT
+(cd  $BUILD_DIR && docker build . --tag exaudf/build_$REPNAME -f Dockerfile.build_$FLAVOR || die "Could not create exaudf/build")
+
+EXTRACT_DIR=extract
+PATH_EXTRACT_DIR=$BUILD_DIR/$EXTRACT_DIR
+mkdir -p $EXTRACT_DIR
 docker container create --name extract_$REPNAME exaudf/build_$REPNAME
-docker container cp extract_$REPNAME:/exaudf $TMPDIR
+docker container cp extract_$REPNAME:/exaudf $PATH_EXTRACT_DIR
 docker container rm -f extract_$REPNAME
-docker build . --no-cache -t exaudf/release_$REPNAME -f flavors/$FLAVOR/Dockerfile.release_$FLAVOR --build-arg extract_dir=$TMPDIR || die "Could not create exaudf/release"
+
+(cd $BUILD_DIR && docker build . --no-cache -t exaudf/release_$REPNAME -f Dockerfile.release_$FLAVOR --build-arg extract_dir=$EXTRACT_DIR || die "Could not create exaudf/release")
+
 rm -rf $TMPDIR
