@@ -29,14 +29,13 @@ done
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
 TMPDIR=$(mktemp -d `basename $0`_${FLAVOR}_tmpdir.XXXXXXXX)
-#TMPDIR=builds
-# function cleanup {
-#     if [ ! -z "$TMPDIR" ]; then
-#     	rm -rf $TMPDIR
-#     fi
-# }
+function cleanup {
+  if [ ! -z "$TMPDIR" ]; then
+    rm -rf $TMPDIR
+  fi
+}
 
-# trap cleanup EXIT
+trap cleanup EXIT
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
         CORES=$(sysctl -n hw.ncpu)
@@ -47,22 +46,21 @@ fi
 REPNAME=$(echo "$FLAVOR" | tr '[:upper:]' '[:lower:]')
 
 BUILD_DIR=$TMPDIR/build
-mkdir -p $BUILD_DIR
+mkdir -p $BUILD_DIR || die "Could not create build directory $BUILD_DIR"
 echo Using base docker file: Dockerfile.base_$FLAVOR
-cp -r ext flavors/$FLAVOR/* src $BUILD_DIR
-ls $BUILD_DIR
-(cd $BUILD_DIR && docker build . --tag exaudf/baseimage_$REPNAME -f Dockerfile.base_$FLAVOR --build-arg numberOfCores=$CORES || die "Could not create exaudf/baseimage")
+cp -r ext flavors/$FLAVOR/* src $BUILD_DIR || die "Could not copy file to build directory $BUILD_DIR"
+(cd $BUILD_DIR && docker build . --tag exaudf/baseimage_$REPNAME -f Dockerfile.base_$FLAVOR --build-arg numberOfCores=$CORES) || die "Could not create exaudf/baseimage"
 
 echo Using build docker file: Dockerfile.build_$FLAVOR
-(cd  $BUILD_DIR && docker build . --tag exaudf/build_$REPNAME -f Dockerfile.build_$FLAVOR || die "Could not create exaudf/build")
+(cd  $BUILD_DIR && docker build . --tag exaudf/build_$REPNAME -f Dockerfile.build_$FLAVOR) || die "Could not create exaudf/build"
 
 EXTRACT_DIR=extract/
 PATH_EXTRACT_DIR=$BUILD_DIR/$EXTRACT_DIR
 #rm -r $PATH_EXTRACT_DIR
-mkdir -p $PATH_EXTRACT_DIR
-docker container create --name extract_$REPNAME exaudf/build_$REPNAME
-docker container cp extract_$REPNAME:/exaudf $PATH_EXTRACT_DIR
-docker container rm -f extract_$REPNAME
+mkdir -p $PATH_EXTRACT_DIR || die "Could not create extract directoy $EXTRACT_DIRECTOY"
+docker container create --name extract_$REPNAME exaudf/build_$REPNAME || die "Could not create extract container"
+docker container cp extract_$REPNAME:/exaudf $PATH_EXTRACT_DIR || die "Could not extract exaudf"
+docker container rm -f extract_$REPNAME || die "Could not delete extract container"
 
 (cd $BUILD_DIR && docker build . --no-cache -t exaudf/release_$REPNAME -f Dockerfile.release_$FLAVOR --build-arg extract_dir=$EXTRACT_DIR || die "Could not create exaudf/release")
 
