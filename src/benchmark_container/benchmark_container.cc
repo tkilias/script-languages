@@ -19,8 +19,15 @@
 #include <mutex>
 #include <type_traits>
 #include <string>
+
 using namespace SWIGVMContainers;
 using namespace std;
+
+#define DECLARE_TIME(var) clock_t  time_counter_start_##var; clock_t time_counter_stop_##var
+#define START_TIME(var) time_counter_start_##var=clock()
+#define STOP_TIME(var)  time_counter_stop_##var=clock()
+#define GET_TIME_SEC(var)  (double) (time_counter_stop_##var-time_counter_start_##var)/CLOCKS_PER_SEC
+
 
 BenchmarkVM::BenchmarkVM(bool checkOnly)
     : meta(), inp(), outp(&inp)
@@ -40,6 +47,10 @@ void BenchmarkVM::shutdown()
 bool BenchmarkVM::run()
 {
     DBG_FUNC_BEGIN(cerr);
+    DECLARE_TIME(fetch);
+    //DECLARE_TIME(emit);
+    int count = 0;
+    int iteration = 0;
     cerr << "Input Columns:" << endl;
     for (unsigned int col = 0; col<meta.inputColumnCount(); col++) {
         cerr << "Column " << col << ": " << meta.inputColumnName(col) << " " << meta.inputColumnTypeName(col) << endl;
@@ -47,10 +58,12 @@ bool BenchmarkVM::run()
     try {
         try {
             cerr << "Begin fetch" << endl;
+            
+            START_TIME(fetch);
             bool hasNext = false;
-            int iteration = 0;
+            
             do {
-                int count = 0;
+                
                 //cerr << "Begin iteration " << iteration << endl;
                 iteration++;
                 for (unsigned int col = 0; col<meta.inputColumnCount(); col++) {           
@@ -94,6 +107,7 @@ bool BenchmarkVM::run()
                 }
                 hasNext = inp.next();
             } while (hasNext);
+            STOP_TIME(fetch);
             cerr << "End fetch" << endl;
         } catch (std::exception& err) {
             lock_guard<mutex> lock(exception_msg_mtx);
@@ -103,12 +117,22 @@ bool BenchmarkVM::run()
 
         try {
             cerr << "Begin emit" << endl;
-            string str1 = string("test1");
-            outp.setString(0,str1.c_str(),strlen(str1.c_str()));
-            outp.next();
-            string str2 = string("test2");
-            outp.setString(0,str2.c_str(),strlen(str2.c_str()));
-            outp.next();
+            {
+                double fetch_time=GET_TIME_SEC(fetch);
+                string str1 = "fetch_time: " + std::to_string(fetch_time);
+                outp.setString(0,str1.c_str(),strlen(str1.c_str()));
+                outp.next();
+            }
+            {
+                string str1 = "count: " + std::to_string(count);
+                outp.setString(0,str1.c_str(),strlen(str1.c_str()));
+                outp.next();
+            }
+            {
+                string str1 = "iteration: " + std::to_string(iteration);
+                outp.setString(0,str1.c_str(),strlen(str1.c_str()));
+                outp.next();
+            }
             outp.flush();
             cerr << "End emit" << endl;
         } catch (std::exception& err) {

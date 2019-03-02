@@ -1,0 +1,4 @@
+language_definition=BENCHMARK=localzmq+protobuf:///bfsdefault/myudfs/benchmark?lang=benchmark#buckets/bfsdefault/myudfs/benchmark/exaudf/exaudfclient PYTHON=builtin_python JAVA=builtin_java
+generic_language_tests=
+test_folders=benchmark
+# ending new line required!
