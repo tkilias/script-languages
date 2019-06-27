@@ -1,4 +1,4 @@
-from click._unicodefun import click
+import click
 
 
 @click.group()

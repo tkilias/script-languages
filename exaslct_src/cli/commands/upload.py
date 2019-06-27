@@ -2,7 +2,7 @@ import getpass
 from typing import Tuple
 
 import luigi
-from click._unicodefun import click
+import click
 
 from exaslct_src.lib.upload_container import UploadContainer
 from exaslct_src.cli.cli import cli

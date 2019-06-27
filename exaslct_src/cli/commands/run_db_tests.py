@@ -2,7 +2,7 @@ import json
 from typing import Tuple
 
 import luigi
-from click._unicodefun import click
+import click
 
 from exaslct_src import TestContainer
 from exaslct_src.cli.cli import cli

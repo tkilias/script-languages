@@ -1,4 +1,4 @@
-from click._unicodefun import click
+import click
 
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, run_tasks, add_options

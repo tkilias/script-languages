@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from click._unicodefun import click
+import click
 
 from exaslct_src.lib.docker_push import DockerPush
 from exaslct_src.cli.cli import cli
