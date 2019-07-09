@@ -82,6 +82,18 @@ goal_options = [
                       "The system will than build all these stages and their dependencies."
                  )]
 
+docker_build_argument_options = {
+    click.option('--transparent-build-args', default=None, type=str,
+                 help="""Docker build args which won't change the content of the images. 
+                         Format: JSON {"key1":"value1","key2":"value2"}"""),
+    click.option('--secret-build-args', default=None, type=str,
+                 help="""Similar to transparent build args, but they won't be stored anywhere.
+                         Format: JSON {"key1":"value1","key2":"value2"}"""),
+    click.option('--image-changing-build-args', default=None, type=str,
+                 help="""Docker build args which might change the content of the images.#
+                         Format: JSON {"key1":"value1","key2":"value2"}"""),
+}
+
 build_options = [
     click.option('--force-rebuild/--no-force-rebuild', default=False,
                  help="Forces the system to complete rebuild all stages down to the stages "
