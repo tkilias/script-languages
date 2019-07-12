@@ -29,12 +29,16 @@ run () {
 }
 
 find_pip_bin () {
-    if $PYTHON3_BIN -m pip list &> /dev/null
+    if [ -n "$PIP_BIN" ];
     then
-        PIP_BIN="$PYTHON3_BIN -m pip "
-    else
-        echo "ERROR: cant find pip"
-	exit 1
+        if $PYTHON3_BIN -m pip list &> /dev/null
+        then
+            PIP_BIN="$PYTHON3_BIN -m pip "
+        else
+            echo "ERROR: Can't find your pip executable, please install pip for your python binary $PYTHON3_BIN, or specify the path to your pip executable in the environment variable PIP_ENV."
+            exit 1
+        fi
+        echo "Using following pip executable $PIP_BIN"
     fi
 }
 
@@ -45,9 +49,10 @@ find_and_run_via_pip () {
     PIPENV_BIN=$(command -v "$PIPENV_LOCATION/$PIPENV_BIN_IN_LOCATION")
     if [ -n "$PIPENV_BIN" ];
     then
+        echo "Using following pipenv executable $PIPENV_BIN"
         run "$PIPENV_BIN"
     else
-        echo "ERROR: pipenv seems to be installed, but I can't find in the PATH or via pip"
+        echo "ERROR: pipenv seems to be installed, but I can't find it in the PATH or via pip. Check your installation of pipenv or specifiy the path to the pipenv executable with the environment variable PIPENV_BIN."
         exit 1
     fi
 }
@@ -109,21 +114,31 @@ discover_pipenv_and_run() {
 
 discover_python36plus() {
     PYTHON_BINARIES=$(whereis python | xargs -n 1 echo | grep bin)
+    PYTHON3_BIN=""
     for PYTHON_BIN in $PYTHON_BINARIES
     do
-        PYTHON_BIN_VERSION=$($PYTHON_BIN --version)
-        if echo "$PYTHON_BIN" | grep "3.[6|7|8]" &> /dev/null
+        PYTHON_BIN_VERSION=$($PYTHON_BIN --version 2>&1 )
+        if echo "$PYTHON_BIN" | grep "3.[6|7|8|9]" &> /dev/null
         then
-            PYTHON3_BIN=python3
+            PYTHON3_BIN="$PYTHON_BIN"
+            echo "Using following python binary: $PYTHON3_BIN"
             break
         fi
     done
+    if -n PYTHON3_BIN
+    then
+        echo "ERROR: Did not find a python 3.6+ binary, please specifiy the environment variable PYTHON3_BIN"
+        exit 1
+    fi
 }
 
 if [ -n "$PIPENV_BIN" ];
 then
     run "$PIPENV_BIN"
 else
-    discover_python36plus
+    if [ -n "$PYTHON3_BIN" ]
+    then
+        discover_python36plus
+    fi
     discover_pipenv_and_run
 fi
