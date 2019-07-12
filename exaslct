@@ -29,9 +29,9 @@ run () {
 }
 
 find_pip_bin () {
-    if python3 -m pip list &> /dev/null
+    if $PYTHON3_BIN -m pip list &> /dev/null
     then
-        PIP_BIN="python3 -m pip "
+        PIP_BIN="$PYTHON3_BIN -m pip "
     else
         echo "ERROR: cant find pip"
 	exit 1
@@ -73,7 +73,7 @@ request_install_to_user () {
     then
         find_pip_bin
         $PIP_BIN install --user pipenv
-        PIPENV_BIN="$(python3 -m site --user-base)/bin/pipenv"
+        PIPENV_BIN="$($PYTHON3_BIN -m site --user-base)/bin/pipenv"
         run "$PIPENV_BIN"
     else
         echo "Aborting"
@@ -81,7 +81,7 @@ request_install_to_user () {
 }
 
 request_install_and_run () {
-    IS_IN_VIRTUAL_ENV=$(python3 -c "import sys; print(hasattr(sys, 'real_prefix'))")
+    IS_IN_VIRTUAL_ENV=$($PYTHON3_BIN -c "import sys; print(hasattr(sys, 'real_prefix'))")
     if [ "$IS_IN_VIRTUAL_ENV" == "True" ];
     then
         request_install_to_virtual_env
@@ -107,9 +107,23 @@ discover_pipenv_and_run() {
     fi
 }
 
+discover_python36plus() {
+    PYTHON_BINARIES=$(whereis python | xargs -n 1 echo | grep bin)
+    for PYTHON_BIN in $PYTHON_BINARIES
+    do
+        PYTHON_BIN_VERSION=$($PYTHON_BIN --version)
+        if echo "$PYTHON_BIN" | grep "3.[6|7|8]" &> /dev/null
+        then
+            PYTHON3_BIN=python3
+            break
+        fi
+    done
+}
+
 if [ -n "$PIPENV_BIN" ];
 then
     run "$PIPENV_BIN"
 else
+    discover_python36plus
     discover_pipenv_and_run
 fi
