@@ -11,15 +11,14 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 run () {
     PIPENV_BIN="$1"
     cd "$SCRIPT_DIR"
-    echo "Using following pipenv executable: $PIPENV_BIN"
-    if $PIPENV_BIN --venv &> /dev/null;
+    if $PIPENV_BIN --venv &> /dev/null
     then
         echo "Using existing virtual environment"
     else
         echo "Creating new virtual environment and installing dependencies"
         $PIPENV_BIN install
     fi
-    if [ ! -f Pipfile.lock ];
+    if [ ! -f Pipfile.lock ]
     then
         echo "Installing dependencies"
         $PIPENV_BIN install
@@ -28,117 +27,102 @@ run () {
     $PIPENV_BIN run python3 exaslct_src/exaslct.py $COMMAND_LINE_ARGS
 }
 
-find_pip_bin () {
-    if [ -n "$PIP_BIN" ];
-    then
-        if $PYTHON3_BIN -m pip list &> /dev/null
-        then
-            PIP_BIN="$PYTHON3_BIN -m pip "
-        else
-            echo "ERROR: Can't find your pip executable, please install pip for your python binary $PYTHON3_BIN, or specify the path to your pip executable in the environment variable PIP_ENV."
-            exit 1
-        fi
-        echo "Using following pip executable $PIP_BIN"
-    fi
-}
 
-find_and_run_via_pip () {
-    find_pip_bin
+find_pipenv_via_pip () {
     local PIPENV_LOCATION=$($PIP_BIN show pipenv | grep 'Location:'  | cut -f 2 -d " ")
     local PIPENV_BIN_IN_LOCATION=$($PIP_BIN show -f pipenv | grep 'bin/pipenv$' | awk '{$1=$1};1')
     PIPENV_BIN=$(command -v "$PIPENV_LOCATION/$PIPENV_BIN_IN_LOCATION")
-    if [ -n "$PIPENV_BIN" ];
-    then
-        echo "Using following pipenv executable $PIPENV_BIN"
-        run "$PIPENV_BIN"
-    else
-        echo "ERROR: pipenv seems to be installed, but I can't find it in the PATH or via pip. Check your installation of pipenv or specifiy the path to the pipenv executable with the environment variable PIPENV_BIN."
-        exit 1
-    fi
 }
 
-request_install_to_virtual_env () {
+request_install_via_pip_to_virtual_env () {
     echo "Do you want to install pipenv into the current virtual environment: yes/no"
     read ANSWER
     if [ "$ANSWER" == "yes" ];
     then
-        find_pip_bin
         $PIP_BIN install pipenv
-        find_and_run_via_pip
-        run "$PIPENV_BIN"
     else
         echo "Aborting"
     fi
 }
 
-request_install_to_user () {
+request_install_via_pip_to_user () {
     echo "Do you want to install pipenv local to the user: yes/no"
     read ANSWER
     if [ "$ANSWER" == "yes" ];
     then
-        find_pip_bin
         $PIP_BIN install --user pipenv
-        PIPENV_BIN="$($PYTHON3_BIN -m site --user-base)/bin/pipenv"
-        run "$PIPENV_BIN"
     else
         echo "Aborting"
     fi
 }
 
-request_install_and_run () {
+request_install_via_pip () {
     IS_IN_VIRTUAL_ENV=$($PYTHON3_BIN -c "import sys; print(hasattr(sys, 'real_prefix'))")
     if [ "$IS_IN_VIRTUAL_ENV" == "True" ];
     then
-        request_install_to_virtual_env
+        request_install_via_pip_to_virtual_env
     else
-        request_install_to_user
-    fi
-}
-
-
-discover_pipenv_and_run() {
-    PIPENV_BIN=$(command -v pipenv)
-    if [ -n "$PIPENV_BIN" ];
-    then
-        run "$PIPENV_BIN"
-    else
-        find_pip_bin
-        if $PIP_BIN show pipenv &> /dev/null;
-        then
-            find_and_run_via_pip
-        else
-            request_install_and_run
-        fi
+        request_install_via_pip_to_user
     fi
 }
 
 discover_python36plus() {
-    PYTHON_BINARIES=$(whereis python | xargs -n 1 echo | grep bin)
-    PYTHON3_BIN=""
-    for PYTHON_BIN in $PYTHON_BINARIES
-    do
-        PYTHON_BIN_VERSION=$($PYTHON_BIN --version 2>&1 )
-        if echo "$PYTHON_BIN" | grep "3.[6|7|8|9]" &> /dev/null
-        then
-            PYTHON3_BIN="$PYTHON_BIN"
-            echo "Using following python binary: $PYTHON3_BIN"
-            break
-        fi
-    done
-    if -n PYTHON3_BIN
+    if [ -z "$PYTHON3_BIN" ]
     then
-        echo "ERROR: Did not find a python 3.6+ binary, please specifiy the environment variable PYTHON3_BIN"
-        exit 1
+        PYTHON_BINARIES=$(whereis -b python | xargs -n 1 echo | grep bin)
+        PYTHON3_BIN=""
+        for PYTHON_BIN in $PYTHON_BINARIES
+        do
+            PYTHON_BIN_VERSION=$($PYTHON_BIN --version 2>&1 )
+            if echo "$PYTHON_BIN" | grep "3.[6|7|8|9]" &> /dev/null
+            then
+                PYTHON3_BIN="$PYTHON_BIN"
+                break
+            fi
+        done
+        if [ -z "$PYTHON3_BIN" ]
+        then
+            echo "ERROR: Did not find a python 3.6+ executable, please specifiy the environment variable PYTHON3_BIN"
+            exit 1
+        fi
+    fi
+    echo "Using following python executable: $PYTHON3_BIN"
+}
+
+discover_pip () {
+    if [ -z "$PIP_BIN" ];
+    then
+        discover_python36plus
+        if $PYTHON3_BIN -m pip list &> /dev/null
+        then
+            PIP_BIN="$PYTHON3_BIN -m pip "
+            echo "Using following pip executable: $PIP_BIN"
+        else
+            echo "ERROR: Can't find your pip executable, please install pip for your python binary $PYTHON3_BIN, or specify the path to your pip executable in the environment variable PIP_ENV."
+            exit 1
+        fi
     fi
 }
 
-if [ -n "$PIPENV_BIN" ];
-then
-    run "$PIPENV_BIN"
-else
-    if [ -n "$PYTHON3_BIN" ]
+discover_pipenv() {
+    if [ -z "$PIPENV_BIN" ]
     then
-        discover_python36plus
+        PIPENV_BIN=$(whereis -b pipenv | xargs -n 1 echo | grep bin)
+        if [ -z "$PIPENV_BIN" ]
+        then
+            discover_pip
+            find_pipenv_via_pip
+        fi
     fi
-    discover_pipenv_and_run
+}
+
+
+discover_pipenv
+if [ -z "$PIPENV_BIN" ]
+then
+    echo "Warning: Can't find your pipenv executable, I try to install it via pip. Otherwise, you can specifiy it via the environment variable $PIPENV_BIN."
+    request_install_via_pip
 fi
+discover_pipenv
+echo "Using following pipenv executable: $PIPENV_BIN"
+run "$PIPENV_BIN"
