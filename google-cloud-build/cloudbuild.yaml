@@ -1,5 +1,5 @@
 steps:
 - name: 'ubuntu'
-  args: ['bash', 'google-cloud-build/build.sh']
+  args: ['bash', 'google-cloud-build/build.sh', '${_FLAVOR}']
 options:
  machineType: 'N1_HIGHCPU_8'
