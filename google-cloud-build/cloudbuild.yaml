@@ -1,0 +1,5 @@
+steps:
+- name: 'ubuntu'
+  args: ['bash', 'build.sh']
+options:
+ machineType: 'N1_HIGHCPU_8'
