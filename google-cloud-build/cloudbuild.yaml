@@ -5,5 +5,8 @@ steps:
   args: ['bash', 'google-cloud-build/test.sh', '${_FLAVOR}']
 - name: 'gcr.io/script-languages/build-container'
   args: ['bash', 'google-cloud-build/export.sh', '${_FLAVOR}']
+timeout: "3600s"
 options:
  machineType: 'N1_HIGHCPU_8'
+ diskSizeGb: "50"
+
