@@ -1,0 +1,19 @@
+{
+  "triggerTemplate": {
+    "projectId": "{{ project_name }}",
+    "repoName": "github_{{ user_name }}_script-languages",
+    "branchName": ".*"
+  },
+  "description": "Build {{ flavor }}",
+  "substitutions": {
+    "_FLAVOR": "{{ flavor }}"
+  },
+  "includedFiles": [
+    "src/*",
+    "exaslct_src/*",
+    "flavors/{{ flavor }}/*",
+    "ext/*",
+    "test/*"
+  ],
+  "filename": "google-cloud-build/cloudbuild.yaml"
+}
