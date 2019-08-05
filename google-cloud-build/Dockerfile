@@ -6,3 +6,4 @@ RUN apt-get update && \
     apt-get install -y python3-pip git && \
     apt-get -y clean && \
     apt-get -y autoremove
+RUN pip install pipenv
