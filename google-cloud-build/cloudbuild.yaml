@@ -2,6 +2,8 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/script-languages/build-container', 'google-cloud-build']
 - name: 'gcr.io/script-languages/build-container'
-  args: ['bash', 'google-cloud-build/build.sh', '${_FLAVOR}']
+  args: ['bash', 'google-cloud-build/test.sh', '${_FLAVOR}']
+- name: 'gcr.io/script-languages/build-container'
+  args: ['bash', 'google-cloud-build/export.sh', '${_FLAVOR}']
 options:
  machineType: 'N1_HIGHCPU_8'
