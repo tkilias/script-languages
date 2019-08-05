@@ -1,4 +1,7 @@
 {
+  {% if trigger_id is defined %}
+  "id": "{{ trigger_id }}",
+  {% endif %}
   "triggerTemplate": {
     "projectId": "{{ project_name }}",
     "repoName": "github_{{ user_name }}_script-languages",
@@ -9,11 +12,11 @@
     "_FLAVOR": "{{ flavor }}"
   },
   "includedFiles": [
-    "src/*",
-    "exaslct_src/*",
-    "flavors/{{ flavor }}/*",
-    "ext/*",
-    "test/*"
+    "src/**",
+    "exaslct_src/**",
+    "flavors/{{ flavor }}/**",
+    "ext/**",
+    "test/**"
   ],
   "filename": "google-cloud-build/cloudbuild.yaml"
 }
