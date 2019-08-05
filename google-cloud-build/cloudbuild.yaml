@@ -1,5 +1,7 @@
 steps:
-- name: 'ubuntu'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/script-languages/build-container', '.']
+- name: 'gcr.io/script-languages/build-container'
   args: ['bash', 'google-cloud-build/build.sh', '${_FLAVOR}']
 options:
  machineType: 'N1_HIGHCPU_8'
