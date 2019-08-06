@@ -4,7 +4,7 @@ steps:
 - name: 'gcr.io/script-languages/build-container'
   args: ['bash', 'google-cloud-build/test.sh', '${_FLAVOR}']
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['rsync','-x','.build_output/exports','.build_output','${_LOG_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/']
+  args: ['rsync','-x','exports','-r','.build_output','${_LOG_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/']
 - name: 'gcr.io/script-languages/build-container'
   args: ['bash', 'google-cloud-build/check_build.sh']
   #- name: gcr.io/cloud-builders/gsutil
