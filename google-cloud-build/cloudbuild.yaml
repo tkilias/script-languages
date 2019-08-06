@@ -11,7 +11,7 @@ steps:
 - name: 'gcr.io/cloud-builders/gsutil'
   entrypoint: "bash"
   args: ['google-cloud-build/check_build.sh', "${_LOG_BUCKET}", "${_FLAVOR}", "$BUILD_ID"]
-- name: 'gcr.io/script-languages/gcloud'
+- name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
   args: ['descrypt.sh','${_DOCKER_PASSWORD}','DOCKER_PASSWORD','${_KEYRING_NAME}','${_KEY_NAME}']
   #- name: gcr.io/cloud-builders/gsutil

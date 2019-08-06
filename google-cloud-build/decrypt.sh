@@ -1,3 +1,7 @@
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
 ENCRYPTED_SECRET=$1
 SECRET_NAME=$2
 KEYRING_NAME=$3
