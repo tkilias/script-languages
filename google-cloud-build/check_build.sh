@@ -6,7 +6,7 @@ LOG_BUCKET="$1"
 FLAVOR="$2"
 BUILD_ID="$3"
 DATETIME_FILE="datetime.txt"
-if [ -f "$DATETIME_FILE" ]
+if [ ! -f "$DATETIME_FILE" ]
 then
 	date --utc +%Y%m%d_%H%M%S > "$DATETIME_FILE"
 fi
