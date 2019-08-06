@@ -1,6 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/script-languages/build-container', '--cache-from', 'gcr.io/script-languages/build-container', 'google-cloud-build']
+  args: ['build', '-t', 'gcr.io/script-languages/build-container', 'google-cloud-build']
   #- name: 'gcr.io/script-languages/build-container'
   #  args: ['bash', 'google-cloud-build/build.sh', '${_FLAVOR}']
   #- name: 'gcr.io/cloud-builders/gsutil'
@@ -16,7 +16,6 @@ steps:
   args: ['-x','google-cloud-build/decrypt.sh','${_DOCKER_PASSWORD}','DOCKER_PASSWORD','${_KEY_RING_NAME}','${_KEY_NAME}']
   #- name: gcr.io/cloud-builders/gsutil
   #  args: ['cp','.build_output/exports/*','${_CONTAINER_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/']
-images: ['gcr.io/script-languages/build-container']
 timeout: "7200s"
 options:
  machineType: 'N1_HIGHCPU_8'
