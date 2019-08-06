@@ -3,8 +3,12 @@ steps:
   args: ['build', '-t', 'gcr.io/script-languages/build-container', 'google-cloud-build']
 - name: 'gcr.io/script-languages/build-container'
   args: ['bash', 'google-cloud-build/test.sh', '${_FLAVOR}']
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['rsync','-x','.build_output/exports','.build_output','${_LOG_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/']
 - name: 'gcr.io/script-languages/build-container'
-  args: ['bash', 'google-cloud-build/export.sh', '${_FLAVOR}']
+  args: ['bash', 'google-cloud-build/check_build.sh']
+  #- name: gcr.io/cloud-builders/gsutil
+  #  args: ['cp','.build_output/exports/*','${_CONTAINER_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/']
 timeout: "7200s"
 options:
  machineType: 'N1_HIGHCPU_8'
