@@ -4,13 +4,18 @@
   {% endif %}
   "triggerTemplate": {
     "projectId": "{{ project_name }}",
-    "repoName": "github_{{ user_name }}_script-languages",
+    "repoName": "github_{{ github_user_name }}_script-languages",
     "branchName": ".*"
   },
   "description": "Build {{ flavor }}",
   "substitutions": {
     "_FLAVOR": "{{ flavor }}",
-    "_LOG_BUCKET": "{{ log_bucket }}"
+    "_LOG_BUCKET": "{{ log_bucket }}",
+    "_KEY_RING_NAME": "{{ key_ring_name }}",
+    "_KEY_NAME": "{{ key_name }}",
+    "_DOCKER_REPOSITORY": "{{ build_docker_repository }}",
+    "_DOCKER_USER": "{{ docker_user }}",
+    "_DOCKER_PASSWORD": "{{ docker_password }}"
   },
   "includedFiles": [
     "src/**",

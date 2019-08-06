@@ -2,11 +2,18 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/script-languages/build-container', 'google-cloud-build']
 - name: 'gcr.io/script-languages/build-container'
+  args: ['bash', 'google-cloud-build/build.sh', '${_FLAVOR}']
+- name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: ['google-cloud-build/check_build.sh', "${_LOG_BUCKET}", "${_FLAVOR}", "$BUILD_ID"]
+- name: 'gcr.io/script-languages/build-container'
   args: ['bash', 'google-cloud-build/test.sh', '${_FLAVOR}']
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['rsync','-x','exports','-r','.build_output','${_LOG_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/']
-- name: 'gcr.io/script-languages/build-container'
-  args: ['bash', 'google-cloud-build/check_build.sh']
+  entrypoint: "bash"
+  args: ['google-cloud-build/check_build.sh', "${_LOG_BUCKET}", "${_FLAVOR}", "$BUILD_ID"]
+- name: 'gcr.io/script-languages/gcloud'
+  entrypoint: bash
+  args: ['descrypt.sh','${_DOCKER_PASSWORD}','DOCKER_PASSWORD','${_KEYRING_NAME}','${_KEY_NAME}']
   #- name: gcr.io/cloud-builders/gsutil
   #  args: ['cp','.build_output/exports/*','${_CONTAINER_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/']
 timeout: "7200s"
