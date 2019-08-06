@@ -13,7 +13,7 @@ steps:
   args: ['google-cloud-build/check_build.sh', "${_LOG_BUCKET}", "${_FLAVOR}", "$BUILD_ID"]
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
-  args: ['descrypt.sh','${_DOCKER_PASSWORD}','DOCKER_PASSWORD','${_KEYRING_NAME}','${_KEY_NAME}']
+  args: ['google-cloud-build/descrypt.sh','${_DOCKER_PASSWORD}','DOCKER_PASSWORD','${_KEYRING_NAME}','${_KEY_NAME}']
   #- name: gcr.io/cloud-builders/gsutil
   #  args: ['cp','.build_output/exports/*','${_CONTAINER_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/']
 timeout: "7200s"
