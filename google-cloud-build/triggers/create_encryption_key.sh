@@ -1,8 +1,10 @@
 #!/bin/bash
-set -o errexit
 set -o nounset
-set -o pipefail
-KEY_RING_NAME=$1
-KEY_NAME=$2
+KEY_RING_NAME="$1"
+KEY_NAME="$2"
 gcloud kms keyrings create $KEY_RING_NAME --location global
 gcloud kms keys create $KEY_NAME --location global --keyring $KEY_RING_NAME --purpose encryption
+
+PROJECT=$(gcloud config get-value project)
+PROJECT_NUMBER=$(gcloud projects list --filter="$PROJECT" --format="value(PROJECT_NUMBER)")
+gcloud kms keys add-iam-policy-binding "$KEY_NAME" --location=global --keyring="$KEY_RING_NAME" --member=serviceAccount:$PROJECT_NUMBER@cloudbuild.gserviceaccount.com --role=roles/cloudkms.cryptoKeyDecrypter
