@@ -55,7 +55,7 @@ steps:
   args: [
           'cp',
           '.build_output/exports/*',
-          '${_CONTAINER_BUCKET}/build_output/${_FLAVOR}/$BUILD_ID/'
+          '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/'
           ]
 timeout: "7200s"
 options:
