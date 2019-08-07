@@ -10,4 +10,3 @@ mkdir -p secrets
 echo -n "$ENCRYPTED_SECRET" |
 	base64 -d -w 0 |
        	gcloud kms decrypt --plaintext-file=- --ciphertext-file=- --location=global --keyring=$KEY_RING_NAME --key=$KEY_NAME > "secrets/$SECRET_NAME"
-cat "secrets/$SECRET_NAME"
