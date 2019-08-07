@@ -54,6 +54,7 @@ class DockerPushImageBaseTask(StoppableTask):
                 "username": target_docker_repository_config().username,
                 "password": target_docker_repository_config().password
             }
+            print("auth_config",auth_config)
             generator = self._client.images.push(repository=image_info.get_target_complete_name(),
                                                  tag=image_info.get_target_complete_tag(),
                                                  auth_config=auth_config,
