@@ -5,7 +5,7 @@
   "triggerTemplate": {
     "projectId": "{{ project_name }}",
     "repoName": "github_{{ github_user_name }}_script-languages",
-    "branchName": ".*"
+    "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
   },
   "description": "Build {{ flavor }}",
   "substitutions": {
@@ -16,7 +16,8 @@
     "_KEY_NAME": "{{ key_name }}",
     "_DOCKER_REPOSITORY": "{{ build_docker_repository }}",
     "_DOCKER_USER": "{{ docker_user }}",
-    "_DOCKER_PASSWORD": "{{ docker_password }}"
+    "_DOCKER_PASSWORD": "{{ docker_password }}",
+    "_GITHUB_TOKEN": "{{ github_token }}"
   },
   "includedFiles": [
     "src/**",
@@ -26,5 +27,5 @@
     "test/**",
     "google-cloud-build/**"
   ],
-  "filename": "google-cloud-build/ci-scripts/build.yaml"
+  "filename": "google-cloud-build/ci-scripts/build_branch.yaml"
 }

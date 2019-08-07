@@ -1,0 +1,24 @@
+{
+  {% if trigger_id is defined %}
+  "id": "{{ trigger_id }}",
+  {% endif %}
+  "triggerTemplate": {
+    "projectId": "{{ project_name }}",
+    "repoName": "github_{{ github_user_name }}_script-languages",
+    "branchName": "^pull_request/.*"
+  },
+  "description": "Build pull request {{ flavor }}",
+  "substitutions": {
+    "_FLAVOR": "{{ flavor }}",
+    "_LOG_BUCKET": "{{ log_bucket }}"
+  },
+  "includedFiles": [
+    "src/**",
+    "exaslct_src/**",
+    "flavors/{{ flavor }}/**",
+    "ext/**",
+    "test/**",
+    "google-cloud-build/**"
+  ],
+  "filename": "google-cloud-build/ci-scripts/build_pull_request.yaml"
+}

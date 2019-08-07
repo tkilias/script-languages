@@ -5,7 +5,8 @@ set -o pipefail
 
 function generate_build_json(){
 	cat "$env_file" "$encrypted_docker_password_file" $* > data.yaml
-	jinja2 $triggers/build.json.jinja2 data.yaml > build.json
+	trigger_file=$(cat "$I" | yq -r .trigger_template_file)
+	jinja2 $triggers/$trigger_file data.yaml > build.json
 	rm data.yaml
 }
 
@@ -16,6 +17,7 @@ function create(){
 	rm build.json
 	echo "$create_output"
 	trigger_id=$(echo "$create_output" | jq .id)
+	mkdir -p $(dirname "$env_flavor_config_path")
 	echo "trigger_id: $trigger_id"  > "$env_flavor_config_path"
 }
 
@@ -32,10 +34,9 @@ function main(){
 	$setup_scripts/create_encrypted_docker_password.sh
 	env_file=".env/env.yaml"
 	encrypted_docker_password_file=".env/encrypted_docker_password.yaml"
-	for I in $(ls $triggers/flavor-config/*.yaml)
+	for I in $(find $triggers/flavor-config -name '*.yaml')
 	do
-		filename=$(basename -- "$I")
-		env_flavor_config_path=".env/flavor-config/$filename"
+		env_flavor_config_path=".env/$I"
 		if [ -f "$env_flavor_config_path" ]
 		then
 			update
