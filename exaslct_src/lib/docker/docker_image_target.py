@@ -16,6 +16,7 @@ class DockerImageTarget(luigi.Target):
             image = self._client.images.get(self.get_complete_name())
             return True
         except docker.errors.DockerException as e:
+            print(e)
             return False
 
     def __del__(self):
