@@ -5,7 +5,7 @@ steps:
           'build', 
           '-t', 
           'gcr.io/script-languages/build-container', 
-          'google-cloud-build'
+          'google-cloud-build/ci-scripts/'
           ]
 - id: 'Build images'
   name: 'gcr.io/script-languages/build-container'
