@@ -23,22 +23,22 @@ steps:
           "${_FLAVOR}", 
           "$BUILD_ID"
           ]
-# - id: 'Run tests'
-#   name: 'gcr.io/script-languages/build-container'
-#   args: [
-#           'bash', 
-#           'google-cloud-build/ci-scripts/test.sh', 
-#           '${_FLAVOR}'
-#           ]
-# - id: 'Check tests'
-#   name: 'gcr.io/cloud-builders/gsutil'
-#   entrypoint: "bash"
-#   args: [
-#           'google-cloud-build/ci-scripts/check_build.sh', 
-#           '${_LOG_BUCKET}', 
-#           '${_FLAVOR}', 
-#           '$BUILD_ID'
-#           ]
+- id: 'Run tests'
+  name: 'gcr.io/script-languages/build-container'
+  args: [
+          'bash', 
+          'google-cloud-build/ci-scripts/test.sh', 
+          '${_FLAVOR}'
+          ]
+- id: 'Check tests'
+  name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: [
+          'google-cloud-build/ci-scripts/check_build.sh', 
+          '${_LOG_BUCKET}', 
+          '${_FLAVOR}', 
+          '$BUILD_ID'
+          ]
 - id: 'Decrypt Docker password'
   name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
@@ -50,27 +50,26 @@ steps:
           '${_KEY_RING_NAME}',
           '${_KEY_NAME}'
           ]
-# - id: 'Upload exported container'
-#   name: 'gcr.io/cloud-builders/gsutil'
-#   args: [
-#           'cp',
-#           '.build_output/exports/*',
-#           '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/'
-#           ]
-- id: 'Show images'
-  name: 'gcr.io/cloud-builders/docker'
-  args: [
-          'images', 
-          ]
-- id: 'Push images to build cache'
+- id: 'Push images to internal build cache'
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash',
           'google-cloud-build/ci-scripts/push_to_build_cache.sh',
           '${_FLAVOR}',
-          '${_DOCKER_REPOSITORY}',
-          '${_DOCKER_USER}',
+          '""',
+          '""',
+          '${_BUILD_DOCKER_REPOSITORY}',
           '$COMMIT_SHA'
+          '${_DOCKER_USER}',
+          ]
+- id: 'Check push'
+  name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: [
+          'google-cloud-build/ci-scripts/check_build.sh', 
+          '${_LOG_BUCKET}', 
+          '${_FLAVOR}', 
+          '$BUILD_ID'
           ]
 timeout: "7200s"
 options:
