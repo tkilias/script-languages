@@ -54,7 +54,7 @@ steps:
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash',
-          'google-cloud-build/ci-scripts/push_to_build_cache.sh',
+          'google-cloud-build/ci-scripts/push.sh',
           '${_FLAVOR}',
           '""',
           '""',
