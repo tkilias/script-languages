@@ -23,7 +23,7 @@ steps:
   args: [
           'bash',
           'google-cloud-build/ci-scripts/export.sh',
-          '${_FLAVOR}',
+          '${_FLAVORS}',
           '${_BUILD_DOCKER_REPOSITORY}',
           '$COMMIT_SHA',
           '""',
@@ -42,7 +42,7 @@ steps:
   args: [
           'bash',
           'google-cloud-build/ci-scripts/push.sh',
-          '${_FLAVOR}',
+          '${_FLAVORS}',
           '${_BUILD_DOCKER_REPOSITORY}',
           '$COMMIT_SHA',
           '""',

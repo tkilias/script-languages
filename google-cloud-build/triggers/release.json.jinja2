@@ -1,0 +1,24 @@
+{
+  {% if trigger_id is defined %}
+  "id": "{{ trigger_id }}",
+  {% endif %}
+  "disabled": "{{ disabled }}",
+  "triggerTemplate": {
+    "projectId": "{{ project_name }}",
+    "repoName": "github_{{ github_user_name }}_script-languages",
+    "branchName": "^ci/.*"
+  },
+  "description": "Release",
+  "substitutions": {
+    "_FLAVORS": "{{ flavors }}",
+    "_LOG_BUCKET": "{{ log_bucket }}",
+    "_CONTAINER_BUCKET": "{{ container_bucket }}",
+    "_KEY_RING_NAME": "{{ key_ring_name }}",
+    "_KEY_NAME": "{{ key_name }}",
+    "_BUILD_DOCKER_REPOSITORY": "{{ build_docker_repository }}",
+    "_BUILD_DOCKER_USER": "{{ docker_user }}",
+    "_BUILD_DOCKER_PASSWORD": "{{ docker_password }}",
+    "_GITHUB_TOKEN": "{{ github_token }}"
+  },
+  "filename": "google-cloud-build/ci-scripts/release.yaml"
+}
