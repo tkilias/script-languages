@@ -2,6 +2,7 @@
   {% if trigger_id is defined %}
   "id": "{{ trigger_id }}",
   {% endif %}
+  "disabled": "{{ disabled }}",
   "triggerTemplate": {
     "projectId": "{{ project_name }}",
     "repoName": "github_{{ github_user_name }}_script-languages",
