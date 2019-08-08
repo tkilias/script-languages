@@ -59,7 +59,7 @@ steps:
           '""',
           '""',
           '${_BUILD_DOCKER_REPOSITORY}',
-          '$COMMIT_SHA'
+          '$COMMIT_SHA',
           '${_DOCKER_USER}',
           ]
 - id: 'Check push'
