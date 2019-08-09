@@ -18,7 +18,7 @@ steps:
           '${_KEY_RING_NAME}',
           '${_KEY_NAME}'
           ]
-- id: 'Decrypt Docker password'
+- id: 'Decrypt Github Token'
   name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
   args: [
