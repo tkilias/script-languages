@@ -35,7 +35,7 @@ function main(){
 	$setup_scripts/create_encrypted_github_token.sh
 	env_file=".env/env.yaml"
 	encrypted_docker_password_file=".env/encrypted_docker_password.yaml"
-	encrypted_github_token_file=".env/encrypted_docker_password.yaml"
+	encrypted_github_token_file=".env/encrypted_github_token.yaml"
 	for I in $(find $triggers/flavor-config -name '*.yaml')
 	do
 		env_flavor_config_path=".env/$I"
