@@ -18,6 +18,17 @@ steps:
           '${_KEY_RING_NAME}',
           '${_KEY_NAME}'
           ]
+- id: 'Decrypt Docker password'
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: bash
+  args: [
+          '-x',
+          'google-cloud-build/ci-scripts/decrypt.sh',
+          '${_GITHUB_TOKEN}',
+          'GITHUB_TOKEN',
+          '${_KEY_RING_NAME}',
+          '${_KEY_NAME}'
+          ]
 - id: 'Export container'
   name: 'gcr.io/script-languages/build-container'
   args: [
@@ -66,6 +77,15 @@ steps:
           '${_LOG_BUCKET}', 
           '${_FLAVOR}', 
           '$BUILD_ID'
+          ]
+- id: 'Create Github Release'
+  name: 'gcr.io/script-languages/build-container'
+  args: [
+          'bash',
+          'google-cloud-build/ci-scripts/create_github_release.sh', 
+          '$COMMIT_SHA',
+          '$TAG_NAME',
+          '${_GITHUB_USER_NAME}',
           ]
 timeout: "7200s"
 options:

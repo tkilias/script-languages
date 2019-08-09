@@ -4,7 +4,7 @@ set -o nounset
 set -o pipefail
 
 function generate_build_json(){
-	cat "$env_file" "$encrypted_docker_password_file" $* > data.yaml
+	cat "$env_file" "$encrypted_docker_password_file" "$encrypted_github_token_file" $* > data.yaml
 	trigger_file=$(cat "$I" | yq -r .trigger_template_file)
 	jinja2 $triggers/$trigger_file data.yaml > build.json
 	rm data.yaml
@@ -32,8 +32,10 @@ function main(){
 	setup_scripts=setup-scripts
 	triggers=triggers
 	$setup_scripts/create_encrypted_docker_password.sh
+	$setup_scripts/create_encrypted_github_token.sh
 	env_file=".env/env.yaml"
 	encrypted_docker_password_file=".env/encrypted_docker_password.yaml"
+	encrypted_github_token_file=".env/encrypted_docker_password.yaml"
 	for I in $(find $triggers/flavor-config -name '*.yaml')
 	do
 		env_flavor_config_path=".env/$I"
