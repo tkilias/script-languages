@@ -1,7 +1,11 @@
 #!/bin/bash
 set -o nounset
-KEY_RING_NAME="$1"
-KEY_NAME="$2"
+
+setup_scripts=setup-scripts
+env_file=".env/env.yaml"
+KEY_RING_NAME=$(cat "$env_file" | yq -r .key_ring_name)
+KEY_NAME=$(cat "$env_file" | yq -r .key_name)
+
 gcloud kms keyrings create $KEY_RING_NAME --location global
 gcloud kms keys create $KEY_NAME --location global --keyring $KEY_RING_NAME --purpose encryption
 
