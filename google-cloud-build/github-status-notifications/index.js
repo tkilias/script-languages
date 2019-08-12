@@ -29,7 +29,7 @@ exports.githubBuildStatusNotification = (event, context) => {
   const gcloudProject=process.env.GCP_PROJECT
 
   var states = new Map();
-  states.set('QUEUE','pending');
+  states.set('QUEUED','pending');
   states.set('WORKING','pending');
   states.set('SUCCESS','success');
   states.set('CANCELD','error');
