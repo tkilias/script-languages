@@ -55,7 +55,7 @@ exports.githubBuildStatusNotification = (event, context) => {
       context: context,
       description: context,
       sha: commitSha,
-      token: response.plaintext,
+      token: "",
       repo: githubRepo,
       owner: githubUser,
       url: url
@@ -77,6 +77,7 @@ exports.githubBuildStatusNotification = (event, context) => {
         const response = responses[0];
         const commitStatus = require('commit-status');
       	console.log("Send status");
+        githubStatus.token=response.plaintext;
         commitStatus.post(githubStatus);
       	console.log("Sent status");
       })
