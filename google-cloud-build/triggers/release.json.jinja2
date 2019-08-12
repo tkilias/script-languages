@@ -4,7 +4,7 @@
   {% endif %}
   "disabled": "{{ disabled }}",
   "triggerTemplate": {
-    "projectId": "{{ project_name }}",
+    "projectId": "{{ gcloud_project_name }}",
     "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
     "branchName": "^ci/.*"
   },
