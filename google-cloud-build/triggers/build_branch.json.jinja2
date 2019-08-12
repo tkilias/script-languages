@@ -5,7 +5,7 @@
   "disabled": "{{ disabled }}",
   "triggerTemplate": {
     "projectId": "{{ project_name }}",
-    "repoName": "github_{{ github_user_name }}_script-languages",
+    "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
     "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
   },
   "description": "Build branch {{ flavor }}",
@@ -19,7 +19,9 @@
     "_BUILD_DOCKER_USER": "{{ docker_user }}",
     "_BUILD_DOCKER_PASSWORD": "{{ docker_password }}",
     "_GITHUB_TOKEN": "{{ github_token }}",
-    "_GITHUB_USER_NAME": "{{ github_user_name }}"
+    "_GITHUB_USER_NAME": "{{ github_user_name }}",
+    "_GITHUB_REPOSITORY": "{{ github_repository }}",
+    "_JOB_TYPE": "build+test"
   },
   "includedFiles": [
     "src/**",
