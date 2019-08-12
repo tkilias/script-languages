@@ -51,7 +51,7 @@ exports.githubBuildStatusNotification = (event, context) => {
   url='https://console.cloud.google.com/cloud-build/builds/'+buildId+'?project='+gcloudProject
 
   githubStatus = {
-      state: states.get(githubToken),
+      state: states.get(status),
       context: context,
       description: context,
       sha: commitSha,
@@ -77,6 +77,7 @@ exports.githubBuildStatusNotification = (event, context) => {
         const response = responses[0];
         const commitStatus = require('commit-status');
       	console.log("Send status");
+      	console.log(githubStatus);
         githubStatus.token=response.plaintext;
         commitStatus.post(githubStatus);
       	console.log("Sent status");
