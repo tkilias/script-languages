@@ -32,7 +32,7 @@ exports.githubBuildStatusNotification = (event, context) => {
   states.set('QUEUED','pending');
   states.set('WORKING','pending');
   states.set('SUCCESS','success');
-  states.set('CANCELD','error');
+  states.set('CANCELLED','error');
   states.set('TIMEOUT','error');
   states.set('INTERNAL_ERROR','error');
   states.set('FAILURE','failure');
