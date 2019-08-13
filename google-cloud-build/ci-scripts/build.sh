@@ -5,7 +5,7 @@ set -o pipefail
 REBUILD=$2
 FLAVOR=$1
 ADDITIONAL_ARGUMENTS=""
-if [ "$REBUILD" == "true" ]
+if [ "$REBUILD" == "True" ]
 then
   ADDITIONAL_ARGUMENTS="--force-rebuild"
 fi
