@@ -37,7 +37,7 @@ exports.githubBuildStatusNotification = (event, context) => {
   states.set('INTERNAL_ERROR','error');
   states.set('FAILURE','failure');
 
-  var context='continuous-integration/google-cloud-build/';
+  var context='google-cloud-build/';
   if(jobType=='build+test'){
     context+='build+test/'+flavor;
   }else if(jobType=='performance-test'){

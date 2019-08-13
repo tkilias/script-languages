@@ -5,6 +5,7 @@ set -o pipefail
 
 function generate_build_json(){
 	cat "$env_file" "$encrypted_docker_password_file" "$encrypted_github_token_file" $* > data.yaml
+  echo "job_id: \"${I##*$triggers/flavor-config/}\""  >> data.yaml
 	trigger_file=$(cat "$I" | yq -r .trigger_template_file)
 	jinja2 $triggers/$trigger_file data.yaml > build.json
 	rm data.yaml
