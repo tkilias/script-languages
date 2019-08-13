@@ -18,23 +18,12 @@ steps:
           '${_KEY_RING_NAME}',
           '${_KEY_NAME}'
           ]
-- id: 'Decrypt Github Token'
-  name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: bash
-  args: [
-          '-x',
-          'google-cloud-build/ci-scripts/scripts/decrypt.sh',
-          '${_GITHUB_TOKEN}',
-          'GITHUB_TOKEN',
-          '${_KEY_RING_NAME}',
-          '${_KEY_NAME}'
-          ]
 - id: 'Export container'
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash',
           'google-cloud-build/ci-scripts/scripts/export.sh',
-          '${_FLAVORS}',
+          '${_FLAVOR}',
           '${_BUILD_DOCKER_REPOSITORY}',
           '$COMMIT_SHA',
           '""',
@@ -55,40 +44,8 @@ steps:
   args: [
           'cp',
           '.build_output/exports/*',
-          '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/'
-          ]
-- id: 'Push images to public build cache'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash',
-          'google-cloud-build/ci-scripts/scripts/push.sh',
-          '${_FLAVORS}',
-          '${_BUILD_DOCKER_REPOSITORY}',
-          '$COMMIT_SHA',
-          '""',
-          '""',
-          '${_DOCKER_USER}',
-          ]
-- id: 'Check push'
-  name: 'gcr.io/cloud-builders/gsutil'
-  entrypoint: "bash"
-  args: [
-          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
-          '${_LOG_BUCKET}', 
-          '${_FLAVOR}', 
-          '$BUILD_ID'
-          ]
-- id: 'Create Github Release'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash',
-          '-x',
-          'google-cloud-build/ci-scripts/scripts/create_github_release.sh', 
-          '$TAG_NAME',
-          '$COMMIT_SHA',
-          '${_GITHUB_USER_NAME}',
+          '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/$BUILD_ID/'
           ]
 timeout: "7200s"
 options:
-  machineType: 'N1_HIGHCPU_8'
   diskSizeGb: "50"

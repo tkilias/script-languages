@@ -8,25 +8,48 @@ function generate_build_json(){
   echo "job_id: \"${TRIGGER_CONFIG_PATH##*$TRIGGERS/flavor-config/}\""  >> data.yaml
 	TRIGGER_FILE=$(cat "$TRIGGER_CONFIG_PATH" | yq -r .trigger_template_file)
 	jinja2 $TRIGGERS/$TRIGGER_FILE data.yaml > build.json
-  cat build.json
 	rm data.yaml
+}
+
+function check_output(){
+  HAS_ERROR=$(echo "$OUTPUT" | jq .error)
+  if [ ! "$HAS_ERROR" == "null" ]
+  then
+    echo "==============================================================================================="
+    echo "==============================================================================================="
+    echo "Got error"
+    echo "$OUTPUT" | jq .
+    echo "for trigger config:"
+    cat build.json | jq .
+    echo "==============================================================================================="
+    echo "==============================================================================================="
+  else
+    echo "-----------------------------------------------------------------------------------------------"
+    echo "-----------------------------------------------------------------------------------------------"
+    echo "Created trigger"
+    echo "$OUTPUT" | jq .
+    echo "-----------------------------------------------------------------------------------------------"
+    echo "-----------------------------------------------------------------------------------------------"
+  fi
 }
 
 function create(){
 	echo "creating" $TRIGGER_CONFIG_PATH
 	generate_build_json "$TRIGGER_CONFIG_PATH"
-	CREATE_OUTPUT=$($SETUP_SCRIPTS/create_build_trigger.sh build.json)
-	rm build.json
-	echo "$CREATE_OUTPUT"
-	TRIGGER_ID=$(echo "$CREATE_OUTPUT" | jq .id)
+	OUTPUT=$($SETUP_SCRIPTS/create_build_trigger.sh build.json)
+  check_output
+  rm build.json
+	echo "$OUTPUT"
+	TRIGGER_ID=$(echo "$OUTPUT" | jq .id)
 	mkdir -p $(dirname "$ENV_FLAVOR_CONFIG_PATH")
 	echo "trigger_id: $TRIGGER_ID"  > "$ENV_FLAVOR_CONFIG_PATH"
 }
 
 function update(){
 	echo "updating" $TRIGGER_CONFIG_PATH
-	generate_build_json "$ENV_FLAVOR_CONFIG_PATH" "$TRIGGER_CONFIG_PATH"
-	$SETUP_SCRIPTS/update_build_trigger.sh build.json
+  generate_build_json "$ENV_FLAVOR_CONFIG_PATH" "$TRIGGER_CONFIG_PATH"
+  OUTPUT=$($SETUP_SCRIPTS/update_build_trigger.sh build.json)
+  check_output
 	rm build.json
 }
 

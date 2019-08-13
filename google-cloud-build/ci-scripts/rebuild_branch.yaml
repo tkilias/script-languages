@@ -5,13 +5,13 @@ steps:
           'build', 
           '-t', 
           'gcr.io/script-languages/build-container', 
-          'google-cloud-build/ci-scripts/'
+          'google-cloud-build/ci-scripts/scripts/'
           ]
 - id: 'Build images'
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash', 
-          'google-cloud-build/ci-scripts/build.sh', 
+          'google-cloud-build/ci-scripts/scripts/build.sh', 
           '${_FLAVOR}',
           '${_REBUILD}'
           ]
@@ -19,7 +19,7 @@ steps:
   name: 'gcr.io/cloud-builders/gsutil'
   entrypoint: "bash"
   args: [
-          'google-cloud-build/ci-scripts/check_build.sh', 
+          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
           "${_LOG_BUCKET}", 
           "${_FLAVOR}", 
           "$BUILD_ID"
@@ -28,14 +28,14 @@ steps:
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash', 
-          'google-cloud-build/ci-scripts/test.sh', 
+          'google-cloud-build/ci-scripts/scripts/test.sh', 
           '${_FLAVOR}'
           ]
 - id: 'Check tests'
   name: 'gcr.io/cloud-builders/gsutil'
   entrypoint: "bash"
   args: [
-          'google-cloud-build/ci-scripts/check_build.sh', 
+          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
           '${_LOG_BUCKET}', 
           '${_FLAVOR}', 
           '$BUILD_ID'
@@ -45,7 +45,7 @@ steps:
   entrypoint: bash
   args: [
           '-x',
-          'google-cloud-build/ci-scripts/decrypt.sh',
+          'google-cloud-build/ci-scripts/scripts/decrypt.sh',
           '${_BUILD_DOCKER_PASSWORD}',
           'DOCKER_PASSWORD',
           '${_KEY_RING_NAME}',
@@ -55,7 +55,7 @@ steps:
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash',
-          'google-cloud-build/ci-scripts/push.sh',
+          'google-cloud-build/ci-scripts/scripts/push.sh',
           '${_FLAVOR}',
           '""',
           '""',
@@ -67,7 +67,7 @@ steps:
   name: 'gcr.io/cloud-builders/gsutil'
   entrypoint: "bash"
   args: [
-          'google-cloud-build/ci-scripts/check_build.sh', 
+          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
           '${_LOG_BUCKET}', 
           '${_FLAVOR}', 
           '$BUILD_ID'

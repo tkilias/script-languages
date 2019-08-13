@@ -2,20 +2,40 @@
   {% if trigger_id is defined %}
   "id": "{{ trigger_id }}",
   {% endif %}
-  "disabled": "{{ disabled }}",
+  {% if build_mode == "rebuild"  %}
+  "disabled": "true",
+  {% elif build_mode == "build" %}
+  "disabled": "false",
+  {% elif build_mode == "release" %} 
+  "disabled": "false",
+  {% endif %}
   "triggerTemplate": {
     "projectId": "{{ gcloud_project_name }}",
     "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
+    {% if build_mode == "rebuild"  %}
+    "branchName": ".*"
+    {% elif build_mode == "build" %}
     "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
+    {% elif build_mode == "release" %} 
+    "branchName": "^develop"
+    {% endif %}
   },
-  {% if rebuild == true  %}
+  {% if build_mode == "rebuild"  %}
   "description": "Rebuild branch {{ flavor }}",
-  {% else %}
+  {% elif build_mode == "build" %}
   "description": "Build branch {{ flavor }}",
+  {% elif build_mode == "release" %} 
+  "description": "Build release {{ flavor }}",
   {% endif %}
   "substitutions": {
-    "_JOB_ID": "{{ job_id }}",
-    "_REBUILD": "{{ rebuild }}",
+    "_JOB_ID": "{{ job_id }}", 
+    {% if build_mode == "rebuild"  %}
+    "_REBUILD": "True",
+    {% elif build_mode == "build" %}
+    "_REBUILD": "False",
+    {% elif build_mode == "release" %} 
+    "_REBUILD": "True",
+    {% endif %}
     "_FLAVOR": "{{ flavor }}",
     "_LOG_BUCKET": "{{ log_bucket }}",
     "_CONTAINER_BUCKET": "{{ container_bucket }}",
@@ -29,6 +49,7 @@
     "_GITHUB_REPOSITORY": "{{ github_repository }}",
     "_JOB_TYPE": "build+test"
   },
+  {% if build_mode == "build" %}
   "includedFiles": [
     "src/**",
     "exaslct_src/**",
@@ -37,5 +58,6 @@
     "test/**",
     "google-cloud-build/**"
   ],
+  {% endif %}
   "filename": "google-cloud-build/ci-scripts/build_branch.yaml"
 }
