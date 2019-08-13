@@ -84,8 +84,7 @@ steps:
           'bash',
           '-x',
           'google-cloud-build/ci-scripts/create_github_release.sh', 
-          '$SHORT_SHA',
-          #          '$TAG_NAME',
+          '$TAG_NAME',
           '$COMMIT_SHA',
           '${_GITHUB_USER_NAME}',
           ]

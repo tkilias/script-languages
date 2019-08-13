@@ -8,6 +8,7 @@ function generate_build_json(){
   echo "job_id: \"${TRIGGER_CONFIG_PATH##*$TRIGGERS/flavor-config/}\""  >> data.yaml
 	TRIGGER_FILE=$(cat "$TRIGGER_CONFIG_PATH" | yq -r .trigger_template_file)
 	jinja2 $TRIGGERS/$TRIGGER_FILE data.yaml > build.json
+  cat build.json
 	rm data.yaml
 }
 
