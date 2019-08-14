@@ -6,7 +6,7 @@ TAG_NAME="$1"
 COMMIT="$2"
 if [ -z "$TAG_NAME" ]
 then
-  TAG_NAME="test_${COMMIT:0:10}"
+  TAG_NAME="ci/${COMMIT:0:10}"
 fi
 find .build_output/exports -type f -size +1900M | xargs rm
 EXPORTED_CONTAINERS=.build_output/exports/*.tar.gz

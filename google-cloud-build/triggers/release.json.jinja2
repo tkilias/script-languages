@@ -11,7 +11,7 @@
     "projectId": "{{ gcloud_project_name }}",
     "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
     {% if debug == false  %}
-    "tagName": ".*"
+    "tagName": "^(([^c][^i][^/]|[^c]i.|c[^i].|ci[^/]).*|..$)" # except starts with ci/
     {% else  %}
     "branchName": "^ci/.*"
     {% endif %}
