@@ -1,13 +1,23 @@
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+	name = "plugin",
+	srcs = 
+    		[
+		"plugin_impl.cc",
+		"plugin.h",
+		"plugin_impl.h"
+		],
+	hdrs = ["plugin.h"]
+)
+
 cc_binary(
 	name = "library.so",
 	linkshared = 1,
-	srcs = 
-    		[
+	srcs = [
 		"library.cc",
-		"library.h"
 		],
+	deps = ["plugin"]
 )
 
 cc_binary(
@@ -15,7 +25,7 @@ cc_binary(
 	linkopts = ["-ldl"],
 	srcs = 
 		[
-		"library.h",
-		"main.cc"
+		"main.cc",
+    "plugin.h"
 		],
 )

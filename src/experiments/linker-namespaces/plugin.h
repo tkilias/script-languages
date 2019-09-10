@@ -8,10 +8,9 @@ struct PluginInterface {
     }
     
     virtual void start() = 0;
+    
+    virtual std::string* createString() = 0;
 
-    virtual void destroy_string(std::string* not_my_string) = 0;
+    virtual void destroyString(std::string* str) = 0;
+
 };
-
-//extern "C" {
-//  PluginInterface* createPlugin();
-//}
