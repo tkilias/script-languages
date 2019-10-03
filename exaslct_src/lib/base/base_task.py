@@ -2,7 +2,9 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Generator, Any
 
-from luigi import Task
+import six
+from luigi import Task, util
+from luigi.parameter import ParameterVisibility
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.base.abstract_task_future import AbstractTaskFuture
@@ -69,9 +71,8 @@ class BaseTask(Task):
         self._task_state = TaskState.INIT
         super().__init__(*args, **kwargs)
         logger = logging.getLogger(f'luigi-interface.{self.__class__.__name__}')
-        self.logger = TaskLoggerWrapper(logger, self.task_id)
-        self._complete_target = PickleTarget(path=self._get_tmp_path_for_completion_target(),
-                                             is_tmp=job_config().remove_return_targets)
+        self.logger = TaskLoggerWrapper(logger, self.__repr__())
+        self._complete_target = PickleTarget(path=self._get_tmp_path_for_completion_target())
         self.init()
         self._task_state = TaskState.NONE
 
@@ -82,14 +83,20 @@ class BaseTask(Task):
         return Path(self._get_tmp_path_for_task(), COMPLETION_TARGET)
 
     def _get_tmp_path_for_task(self) -> Path:
-        return Path(build_config().output_directory,
-                    job_config().job_id,
-                    "temp",
+        return Path(self._get_tmp_path_for_job(),
                     self.task_id)
 
-    def get_output_path(self) -> Path:
+    def _get_tmp_path_for_job(self) -> Path:
         return Path(build_config().output_directory,
                     job_config().job_id,
+                    "temp")
+
+    def _get_output_path_for_job(self) -> Path:
+        return Path(build_config().output_directory,
+                    job_config().job_id)
+
+    def get_output_path(self) -> Path:
+        return Path(self._get_output_path_for_job(),
                     "output",
                     self.task_id)
 
@@ -146,10 +153,34 @@ class BaseTask(Task):
         """Returns the object to the calling task. The object needs to be pickleable"""
         if self._task_state == TaskState.RUN:
             if name not in self._registered_return_targets:
-                target = PickleTarget(self._get_tmp_path_for_returns(name), is_tmp=True)
+                target = PickleTarget(self._get_tmp_path_for_returns(name))
                 self._registered_return_targets[name] = target
                 target.write(object)
             else:
                 raise Exception(f"return target {name} already used")
         else:
             raise WrongTaskStateException(self._task_state, "return_target")
+
+    def __repr__(self):
+        """
+        Build a task representation like `MyTask(param1=1.5, param2='5')`
+        """
+        params = self.get_params()
+        param_values = self.get_param_values(params, [], self.param_kwargs)
+
+        # Build up task id
+        repr_parts = []
+        param_objs = dict(params)
+        for param_name, param_value in param_values:
+            if param_objs[param_name].significant and \
+                    param_objs[param_name].visibility == ParameterVisibility.PUBLIC:
+                repr_parts.append('%s=%s' % (param_name, param_objs[param_name].serialize(param_value)))
+
+        task_str = '{}({})'.format(self.get_task_family(), ', '.join(repr_parts))
+
+        return task_str
+
+    def create_task_with_common_params(self, task_class, **kwargs):
+        params = util.common_params(self, task_class)
+        params.update(kwargs)
+        return task_class(**params)

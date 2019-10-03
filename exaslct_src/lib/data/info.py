@@ -3,15 +3,8 @@ import json
 import jsonpickle
 import luigi
 
+from exaslct_src.lib.base.frozendict_to_dict import FrozenDictToDict
 
-class FrozenDictToDict():
-    def convert(self, obj):
-        if isinstance(obj, luigi.parameter._FrozenOrderedDict):
-            return {k: self.convert(v) for k, v in obj.items()}
-        elif isinstance(obj, (list,tuple)):
-            return [self.convert(o) for o in obj]
-        else:
-            return obj
 
 class Info:
     def to_json(self, indent=4):

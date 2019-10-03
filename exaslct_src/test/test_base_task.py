@@ -1,13 +1,21 @@
+import shutil
+import time
 import unittest
 from datetime import datetime
 
 import luigi
-from luigi import Parameter
+from luigi import Parameter, Config
 
 from exaslct_src.lib.base.base_task import BaseTask
+from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.job_config import job_config
+from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
+from exaslct_src.lib.data.container_info import ContainerInfo
+
+TestBaseTask = DependencyLoggerBaseTask
 
 
-class TestTask1(BaseTask):
+class TestTask1(TestBaseTask):
     def init(self):
         self.task2 = self.register_dependency(TestTask2())
 
@@ -23,7 +31,7 @@ class TestTask1(BaseTask):
         self.logger.info(f"""task3_2 {tasks_3["2"].get_output("output")}""")
 
 
-class TestTask2(BaseTask):
+class TestTask2(TestBaseTask):
     def init(self):
         pass
 
@@ -32,7 +40,7 @@ class TestTask2(BaseTask):
         self.return_object([1, 2, 3, 4])
 
 
-class TestTask3(BaseTask):
+class TestTask3(TestBaseTask):
     input_param = Parameter()
 
     def init(self):
@@ -43,14 +51,130 @@ class TestTask3(BaseTask):
         self.return_object(name="output", object=["a", "b", self.input_param])
 
 
+class TestTask4(TestBaseTask):
+
+    def init(self):
+        pass
+
+    def run_task(self):
+        yield from self.run_dependency([
+            TestTask5(),
+            TestTask6()])
+
+
+class TestTask5(TestBaseTask):
+
+    def init(self):
+        pass
+
+    def run_task(self):
+        raise Exception()
+
+
+class TestTask6(TestBaseTask):
+
+    def init(self):
+        pass
+
+    def run_task(self):
+        pass
+
+
+class TestParameter(Config):
+    test_parameter = Parameter()
+
+
+class TestTask7(TestBaseTask, TestParameter):
+
+    def init(self):
+        task8 = self.create_task_with_common_params(TestTask8, new_parameter="new")
+        self.task8_future = self.register_dependency(task8)
+
+    def run_task(self):
+        pass
+
+
+class TestTask8(TestBaseTask, TestParameter):
+    new_parameter = Parameter()
+
+    def init(self):
+        pass
+
+    def run_task(self):
+        pass
+
+
+class Data:
+    def __init__(self, a1: int, a2: str):
+        self.a2 = a2
+        self.a1 = a1
+
+    def __repr__(self):
+        return str(self.__dict__)
+
+
+class TestTask9(TestBaseTask):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def init(self):
+        for i in range(10):
+            data = Data(i, f"{i}")
+            self.register_dependency(TestTask10(parameter_1=data))
+
+    def run_task(self):
+        pass
+
+
+class TestTask10(TestBaseTask):
+    parameter_1 = JsonPickleParameter()
+
+    def init(self):
+        pass
+
+    def run_task(self):
+        time.sleep(1)
+        print(self.parameter_1)
+
+
 class BaseTaskTest(unittest.TestCase):
 
-    def test_something(self):
-        job_id = datetime.now().strftime('%Y_%m_%d_%H_%M_%S') + str(TestTask1.__name__)
-        luigi.configuration.get_config().set('job_config', 'job_id', job_id)
+    def set_job_id(self, task_cls):
+        strftime = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        job_id = f"{strftime}_{task_cls.__name__}"
+        print(job_id)
+        config = luigi.configuration.get_config()
+        config.set('job_config', 'job_id', job_id)
+        # config.reload()
 
+    def test_dependency_creation(self):
+        self.set_job_id(TestTask1)
         task = TestTask1()
         luigi.build([task], workers=1, local_scheduler=True, log_level="INFO")
+        if task._get_tmp_path_for_job().exists():
+            shutil.rmtree(str(task._get_tmp_path_for_job()))
+
+    def test_failing_task(self):
+        self.set_job_id(TestTask4)
+        task = TestTask4()
+        luigi.build([task], workers=1, local_scheduler=True, log_level="INFO")
+        if task._get_tmp_path_for_job().exists():
+            shutil.rmtree(str(task._get_tmp_path_for_job()))
+
+    def test_common_parameter(self):
+        self.set_job_id(TestTask7)
+        task = TestTask7("input")
+        luigi.build([task], workers=1, local_scheduler=True, log_level="INFO")
+        if task._get_tmp_path_for_job().exists():
+            shutil.rmtree(str(task._get_tmp_path_for_job()))
+
+    def test_json_pickle_parameter(self):
+        self.set_job_id(TestTask9)
+        task = TestTask9()
+        luigi.build([task], workers=3, local_scheduler=True, log_level="INFO")
+        if task._get_tmp_path_for_job().exists():
+            shutil.rmtree(str(task._get_tmp_path_for_job()))
 
 
 if __name__ == '__main__':
