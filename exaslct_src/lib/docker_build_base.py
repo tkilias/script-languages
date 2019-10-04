@@ -57,10 +57,10 @@ class DockerBuildBase(DependencyLoggerBaseTask):
         image_infos = {goal: analyze_task_future.get_output()
                        for goal, analyze_task_future
                        in self.analyze_tasks_futures.items()}
-        tasks = self.create_build_tasks_for_image_infos(image_infos, shortcut_build)
+        tasks = self._create_build_tasks_for_image_infos(image_infos, shortcut_build)
         return tasks
 
-    def create_build_tasks_for_image_infos(self, image_infos: Dict[str, ImageInfo], shortcut_build: bool):
+    def _create_build_tasks_for_image_infos(self, image_infos: Dict[str, ImageInfo], shortcut_build: bool):
         result = {goal: self._create_build_task_for_image_info(image_info, shortcut_build)
                   for goal, image_info in image_infos.items()}
         return result
@@ -88,7 +88,7 @@ class DockerBuildBase(DependencyLoggerBaseTask):
             self, image_info: ImageInfo,
             shortcut_build: bool = True) -> DockerCreateImageTask:
         required_tasks = \
-            self.create_build_tasks_for_image_infos(
+            self._create_build_tasks_for_image_infos(
                 image_info.depends_on_images, shortcut_build)
         required_task_infos = self._create_required_task_infos(required_tasks)
         image_info_copy = copy.copy(image_info)  # TODO looks not nice

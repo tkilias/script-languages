@@ -4,7 +4,6 @@ import luigi
 
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.data.required_task_info import RequiredTaskInfo
-from exaslct_src.lib.docker.docker_create_image_task import DockerCreateImageTask
 from exaslct_src.lib.docker.docker_push_task import DockerPushImageBaseTask
 
 
@@ -16,10 +15,7 @@ class DockerPushImageTask(DockerPushImageBaseTask):
 
     required_task_info = JsonPickleParameter(RequiredTaskInfo,
                                              visibility=luigi.parameter.ParameterVisibility.HIDDEN,
-                                             significant=True) # type:RequiredTaskInfo
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+                                             significant=True)  # type:RequiredTaskInfo
 
     def get_docker_image_task(self):
         module = importlib.import_module(self.required_task_info.module_name)
