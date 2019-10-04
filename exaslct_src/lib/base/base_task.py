@@ -1,13 +1,12 @@
 import logging
 from pathlib import Path
-from typing import Dict, List, Generator, Any
+from typing import Dict, List, Generator, Any, Union
 
-import six
 from luigi import Task, util
 from luigi.parameter import ParameterVisibility
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
-from exaslct_src.lib.base.abstract_task_future import AbstractTaskFuture
+from exaslct_src.lib.base.abstract_task_future import AbstractTaskFuture, DEFAULT_RETURN_OBJECT_NAME
 from exaslct_src.lib.base.job_config import job_config
 from exaslct_src.lib.base.pickle_target import PickleTarget
 from exaslct_src.lib.base.task_logger_wrapper import TaskLoggerWrapper
@@ -16,8 +15,6 @@ from exaslct_src.lib.base.wrong_task_state_exception import WrongTaskStateExcept
 from exaslct_src.lib.build_config import build_config
 
 RETURN_TARGETS = "return_targets"
-
-DEFAULT_RETURN_OBJECT_NAME = "default"
 
 COMPLETION_TARGET = "completion_target"
 
@@ -51,7 +48,7 @@ class RunTaskFuture(AbstractTaskFuture):
         self._outputs_dict = None
         self.completion_target = completion_target
 
-    def get_output(self, name: str):
+    def get_output(self, name: str = DEFAULT_RETURN_OBJECT_NAME):
         return self._get_outputs_dict()[name].read()
 
     def list_outputs(self) -> List[str]:
@@ -73,7 +70,7 @@ class BaseTask(Task):
         logger = logging.getLogger(f'luigi-interface.{self.__class__.__name__}')
         self.logger = TaskLoggerWrapper(logger, self.__repr__())
         self._complete_target = PickleTarget(path=self._get_tmp_path_for_completion_target())
-        self.init()
+        self.register_required()
         self._task_state = TaskState.NONE
 
     def _get_tmp_path_for_returns(self, name: str) -> Path:
@@ -96,15 +93,24 @@ class BaseTask(Task):
                     job_config().job_id)
 
     def get_output_path(self) -> Path:
-        return Path(self._get_output_path_for_job(),
-                    "output",
+        path = Path(self._get_output_path_for_job(),
+                    "outputs",
                     self.task_id)
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def get_log_path(self) -> Path:
+        path = Path(self.get_output_path(), "logs")
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
     def get_cache_path(self) -> Path:
-        return Path(build_config().output_directory, "cache")
+        path = Path(build_config().output_directory, "cache")
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
-    def init(self):
-        raise AbstractMethodException()
+    def register_required(self):
+        pass
 
     def register_dependency(self, task: "BaseTask"):
         if self._task_state == TaskState.INIT:
@@ -114,6 +120,32 @@ class BaseTask(Task):
         else:
             raise WrongTaskStateException(self._task_state, "register_dependency")
 
+    def register_dependencies(self, tasks):
+        if isinstance(tasks, dict):
+            return {key: self.register_dependencies(task) for key, task in tasks.items()}
+        elif isinstance(tasks, list):
+            return [self.register_dependencies(task) for task in tasks]
+        elif isinstance(tasks, BaseTask):
+            return self.register_dependency(tasks)
+        else:
+            return tasks
+
+    def get_values_from_futures(self, futures):
+        if isinstance(futures, dict):
+            return {key: self.get_values_from_futures(task) for key, task in futures.items()}
+        elif isinstance(futures, list):
+            return [self.get_values_from_futures(task) for task in futures]
+        elif isinstance(futures, AbstractTaskFuture):
+            return self.get_values_from_future(futures)
+        else:
+            return futures
+
+    def get_values_from_future(self, future: AbstractTaskFuture) -> Union[Any, Dict[str, Any]]:
+        if len(future.list_outputs()) == 1 and DEFAULT_RETURN_OBJECT_NAME in future.list_outputs():
+            return future.get_output()
+        else:
+            return {future.get_output(key) for key in future.list_outputs()}
+
     def requires(self):
         return self._registered_tasks
 
@@ -121,17 +153,21 @@ class BaseTask(Task):
         return self._complete_target
 
     def run(self):
-        self._task_state = TaskState.RUN
-        task_generator = self.run_task()
-        if task_generator is not None:
-            yield from task_generator
-        self._task_state = TaskState.NONE
-        self._complete_target.write(self._registered_return_targets)
+        try:
+            self._task_state = TaskState.RUN
+            task_generator = self.run_task()
+            if task_generator is not None:
+                yield from task_generator
+            self._task_state = TaskState.NONE
+            self._complete_target.write(self._registered_return_targets)
+        except Exception as e:
+            self.logger.exception("Exception in run: %s", e)
+            raise e
 
     def run_task(self):
         raise AbstractMethodException()
 
-    def run_dependency(self, tasks) -> Generator["BaseTask", PickleTarget, Any]:
+    def run_dependencies(self, tasks) -> Generator["BaseTask", PickleTarget, Any]:
         if self._task_state == TaskState.RUN:
             completion_targets = yield tasks
             task_futures = self.generate_run_task_furtures(completion_targets)

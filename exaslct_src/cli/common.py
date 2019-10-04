@@ -47,12 +47,12 @@ def set_docker_repository_config(docker_password: str, docker_repository_name: s
     luigi.configuration.get_config().set(config_class, 'tag_prefix', tag_prefix)
     if docker_repository_name is not None:
         luigi.configuration.get_config().set(config_class, 'repository_name', docker_repository_name)
-    password_environment_variable_name=f"{kind.upper()}_DOCKER_PASSWORD"
+    password_environment_variable_name = f"{kind.upper()}_DOCKER_PASSWORD"
     if docker_username is not None:
         luigi.configuration.get_config().set(config_class, 'username', docker_username)
         if docker_password is not None:
             luigi.configuration.get_config().set(config_class, 'password', docker_password)
-        elif password_environment_variable_name in os.environ: 
+        elif password_environment_variable_name in os.environ:
             print(f"Using password from environment variable {password_environment_variable_name}")
             password = os.environ[password_environment_variable_name]
             luigi.configuration.get_config().set(config_class, 'password', password)
@@ -64,7 +64,7 @@ def set_docker_repository_config(docker_password: str, docker_repository_name: s
 def import_build_steps(flavor_path: Tuple[str, ...]):
     # We need to load the build steps of a flavor in the commandline processor,
     # because the imported classes need to be available in all processes spawned by luigi.
-    # If we use, import the build steps in a Luigi Task they are only available in the worker
+    # If we  import the build steps in a Luigi Task they are only available in the worker
     # which executes this task. The build method with local scheduler of luigi uses fork
     # to create the scheduler and worker processes, such that the imported classes available
     # in the scheduler and worker processes
@@ -77,28 +77,32 @@ def import_build_steps(flavor_path: Tuple[str, ...]):
         spec.loader.exec_module(module)
 
 
-# TODO add watchdog, which uploads the logs after given ammount of time, to get logs before travis kills the job
-def run_tasks(tasks_creator: Callable[[], List[luigi.Task]],
-              workers: int, task_dependencies_dot_file: str,
-              on_success: Callable[[], None] = None,
-              on_failure: Callable[[], None] = None):
+def set_job_id(name):
+    strftime = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    job_id = f"{strftime}_{name}"
+    config = luigi.configuration.get_config()
+    config.set('job_config', 'job_id', job_id)
+
+
+def run_task(task_creator: Callable[[], luigi.Task],
+             workers: int,
+             task_dependencies_dot_file: str) \
+        -> Tuple[bool, luigi.Task]:
     setup_worker()
     start_time = datetime.now()
-    tasks = remove_stoppable_task_targets(tasks_creator)
-    no_scheduling_errors = luigi.build(tasks, workers=workers, local_scheduler=True, log_level="INFO")
-    if StoppableTask().failed_target.exists() or not no_scheduling_errors:
-        handle_failure(on_failure)
+    task = remove_stoppable_task_targets(task_creator)
+    no_scheduling_errors = luigi.build([task], workers=workers, local_scheduler=True, log_level="INFO")
+    if not StoppableTask().failed_target.exists() and no_scheduling_errors:
+        handle_success(task_dependencies_dot_file, start_time)
+        return True, task
     else:
-        handle_success(on_success, task_dependencies_dot_file, start_time)
+        return False, task
 
 
-def handle_success(on_success: Callable[[], None], task_dependencies_dot_file: str, start_time: datetime):
+def handle_success(task_dependencies_dot_file: str, start_time: datetime):
     generate_graph_from_task_dependencies(task_dependencies_dot_file)
-    if on_success is not None:
-        on_success()
     timedelta = datetime.now() - start_time
     print("The command took %s s" % timedelta.total_seconds())
-    exit(0)
 
 
 def generate_graph_from_task_dependencies(task_dependencies_dot_file: str):
@@ -128,12 +132,6 @@ def collect_dependencies() -> Set[TaskDependency]:
                     if task_dependency.state == DependencyState.requested.name:
                         dependencies.add(task_dependency)
     return dependencies
-
-
-def handle_failure(on_failure: Callable[[], None]):
-    if on_failure is not None:
-        on_failure()
-    exit(1)
 
 
 def remove_stoppable_task_targets(tasks_creator):

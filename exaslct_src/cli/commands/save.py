@@ -3,7 +3,7 @@ from typing import Tuple
 from click._unicodefun import click
 
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_tasks, add_options, \
+from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
     import_build_steps
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, goal_options, \
@@ -69,4 +69,4 @@ def save(save_directory: str,
                                 save_all=save_all,
                                 flavor_paths=list(flavor_path),
                                 goals=list(goal))]
-    run_tasks(tasks, workers, task_dependencies_dot_file)
+    run_task(tasks, workers, task_dependencies_dot_file)

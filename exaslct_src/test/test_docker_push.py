@@ -1,10 +1,4 @@
-import os
-import shlex
-import shutil
-import subprocess
-import tempfile
 import unittest
-from pathlib import Path
 
 import docker
 

@@ -15,6 +15,9 @@ class Info:
     def to_dict(self):
         return json.loads(self.to_json())
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.__dict__})"
+
     @classmethod
     def from_json(cls, json_string):
         loaded_object = jsonpickle.decode(json_string)

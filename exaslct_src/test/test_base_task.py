@@ -16,14 +16,14 @@ TestBaseTask = DependencyLoggerBaseTask
 
 
 class TestTask1(TestBaseTask):
-    def init(self):
+    def register_required(self):
         self.task2 = self.register_dependency(TestTask2())
 
     def run_task(self):
         self.logger.info("RUN")
         self.logger.info(f"task2 list_outputs {self.task2.list_outputs()}")
         self.logger.info(f"task2 {self.task2.get_output()}")
-        tasks_3 = yield from self.run_dependency({
+        tasks_3 = yield from self.run_dependencies({
             "1": TestTask3("e"),
             "2": TestTask3("d"),
         })
@@ -32,8 +32,6 @@ class TestTask1(TestBaseTask):
 
 
 class TestTask2(TestBaseTask):
-    def init(self):
-        pass
 
     def run_task(self):
         self.logger.info("RUN")
@@ -43,9 +41,6 @@ class TestTask2(TestBaseTask):
 class TestTask3(TestBaseTask):
     input_param = Parameter()
 
-    def init(self):
-        pass
-
     def run_task(self):
         self.logger.info(f"RUN {self.input_param}")
         self.return_object(name="output", object=["a", "b", self.input_param])
@@ -53,28 +48,19 @@ class TestTask3(TestBaseTask):
 
 class TestTask4(TestBaseTask):
 
-    def init(self):
-        pass
-
     def run_task(self):
-        yield from self.run_dependency([
+        yield from self.run_dependencies([
             TestTask5(),
             TestTask6()])
 
 
 class TestTask5(TestBaseTask):
 
-    def init(self):
-        pass
-
     def run_task(self):
         raise Exception()
 
 
 class TestTask6(TestBaseTask):
-
-    def init(self):
-        pass
 
     def run_task(self):
         pass
@@ -86,7 +72,7 @@ class TestParameter(Config):
 
 class TestTask7(TestBaseTask, TestParameter):
 
-    def init(self):
+    def register_required(self):
         task8 = self.create_task_with_common_params(TestTask8, new_parameter="new")
         self.task8_future = self.register_dependency(task8)
 
@@ -96,9 +82,6 @@ class TestTask7(TestBaseTask, TestParameter):
 
 class TestTask8(TestBaseTask, TestParameter):
     new_parameter = Parameter()
-
-    def init(self):
-        pass
 
     def run_task(self):
         pass
@@ -112,28 +95,27 @@ class Data:
     def __repr__(self):
         return str(self.__dict__)
 
+
 class Data1:
     pass
+
 
 class TestTask9(TestBaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def init(self):
-        for i in range(10):
-            data = Data(i, f"{i}")
-            self.register_dependency(TestTask10(parameter_1=data))
+    def register_required(self):
+        inputs = [Data(i, f"{i}") for i in range(10)]
+        tasks = [TestTask10(parameter_1=input) for input in inputs]
+        self.register_dependencies(tasks)
 
     def run_task(self):
-        yield from self.run_dependency(TestTask10(parameter_1=Data1()))
+        yield from self.run_dependencies(TestTask10(parameter_1=Data1()))
 
 
 class TestTask10(TestBaseTask):
     parameter_1 = JsonPickleParameter(Data)
-
-    def init(self):
-        pass
 
     def run_task(self):
         time.sleep(1)

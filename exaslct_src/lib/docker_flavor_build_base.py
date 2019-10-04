@@ -1,20 +1,17 @@
-from pathlib import Path
 from typing import Dict, Set
 
 from exaslct_src.lib.docker.docker_analyze_task import DockerAnalyzeImageTask
 from exaslct_src.lib.docker.docker_flavor_image_task import DockerFlavorAnalyzeImageTask
 from exaslct_src.lib.docker_build_base import DockerBuildBase
-from exaslct_src.lib.flavor_task import FlavorTask
+from exaslct_src.lib.flavor_task import FlavorBaseTask, FlavorsBaseTask
 
-
-class DockerFlavorBuildBase(FlavorTask, DockerBuildBase):
+class DockerFlavorBuildBase(FlavorBaseTask, DockerBuildBase):
 
     # TODO order pull for images which share dependencies
 
-    def get_goal_class_map(self, params) -> Dict[str, DockerAnalyzeImageTask]:
-        flavor_path = params["flavor_path"]
-        module_name_for_build_steps = flavor_path.replace("/", "_").replace(".", "_")
-        available_tasks = [subclass(**params)
+    def get_goal_class_map(self) -> Dict[str, DockerAnalyzeImageTask]:
+        module_name_for_build_steps = self.flavor_path.replace("/", "_").replace(".", "_")
+        available_tasks = [subclass(flavor_path=self.flavor_path)
                            for subclass
                            in DockerFlavorAnalyzeImageTask.__subclasses__()
                            if subclass.__module__ == module_name_for_build_steps]

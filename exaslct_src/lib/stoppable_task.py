@@ -169,7 +169,7 @@ class StoppableTask(luigi.Task):
 
     def start_still_running_logger(self):
         # TODO use larger delay for this StillRunningLogger
-        still_running_logger = StillRunningLogger(self.logger, self.__repr__(), "task")
+        still_running_logger = StillRunningLogger(self.logger, "task")
         still_running_logger_thread = StillRunningLoggerThread(still_running_logger)
         still_running_logger_thread.start()
         return still_running_logger_thread

@@ -1,7 +1,7 @@
 from click._unicodefun import click
 
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, run_tasks, add_options
+from exaslct_src.cli.common import set_build_config, run_task, add_options
 from exaslct_src.cli.options \
     import system_options, output_directory, tempory_base_directory, docker_db_options
 from exaslct_src.lib.test_runner.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
@@ -49,4 +49,4 @@ def spawn_test_environment(
             bucketfs_write_password="write"
         )]
 
-    run_tasks(tasks, workers, task_dependencies_dot_file)
+    run_task(tasks, workers, task_dependencies_dot_file)
