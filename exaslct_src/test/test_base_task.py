@@ -112,6 +112,8 @@ class Data:
     def __repr__(self):
         return str(self.__dict__)
 
+class Data1:
+    pass
 
 class TestTask9(TestBaseTask):
 
@@ -124,11 +126,11 @@ class TestTask9(TestBaseTask):
             self.register_dependency(TestTask10(parameter_1=data))
 
     def run_task(self):
-        pass
+        yield from self.run_dependency(TestTask10(parameter_1=Data1()))
 
 
 class TestTask10(TestBaseTask):
-    parameter_1 = JsonPickleParameter()
+    parameter_1 = JsonPickleParameter(Data)
 
     def init(self):
         pass
@@ -172,7 +174,10 @@ class BaseTaskTest(unittest.TestCase):
     def test_json_pickle_parameter(self):
         self.set_job_id(TestTask9)
         task = TestTask9()
-        luigi.build([task], workers=3, local_scheduler=True, log_level="INFO")
+        try:
+            luigi.build([task], workers=3, local_scheduler=True, log_level="INFO")
+        except Exception as e:
+            print(e)
         if task._get_tmp_path_for_job().exists():
             shutil.rmtree(str(task._get_tmp_path_for_job()))
 
