@@ -17,6 +17,7 @@ class ExportContainerParameter(Config):
     release_name = luigi.OptionalParameter(None)
     # TOOD force export
 
+
 class ExportContainers(FlavorsBaseTask, ExportContainerParameter):
 
     def __init__(self, *args, **kwargs):
@@ -26,13 +27,12 @@ class ExportContainers(FlavorsBaseTask, ExportContainerParameter):
 
     def register_required(self):
         tasks = self.create_tasks_for_flavors_with_common_params(
-            ExportFlavorContainer) # type: Dict[str,ExportFlavorContainer]
+            ExportFlavorContainer)  # type: Dict[str,ExportFlavorContainer]
         self.export_info_futures = self.register_dependencies(tasks)
 
     def run_task(self):
         export_infos = self.get_values_from_futures(
             self.export_info_futures)  # type: Dict[str,Dict[str,ExportInfo]]
-
         self.write_command_line_output(export_infos)
 
     def write_command_line_output(self, export_infos: Dict[str, Dict[str, ExportInfo]]):
@@ -64,7 +64,8 @@ class ExportFlavorContainer(DockerFlavorBuildBase, ExportContainerParameter):
 
     def run_task(self):
         build_tasks = self.create_build_tasks(not build_config().force_rebuild)
-        tasks_creator = ExportContainerTasksCreator(export_path=self.export_path,
+        tasks_creator = ExportContainerTasksCreator(flavor_path=self.flavor_path,
+                                                    export_path=self.export_path,
                                                     release_name=self.release_name)
         export_tasks = tasks_creator.create_export_tasks(self.flavor_path, build_tasks)
         export_info_futures = yield from self.run_dependencies(export_tasks)

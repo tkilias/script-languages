@@ -8,7 +8,7 @@ class DockerUploadTest(unittest.TestCase):
         print(f"SetUp {self.__class__.__name__}")
         self.test_environment=utils.ExaslctTestEnvironment(self)
         self.test_environment.clean_images()
-        self.docker_environment = self.test_environment.spawn_docker_test_environment()
+        self.docker_environment = self.test_environment.spawn_docker_test_environment("DockerUploadTest")
 
     def tearDown(self):
         try:

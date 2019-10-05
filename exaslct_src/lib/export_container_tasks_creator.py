@@ -7,17 +7,17 @@ from exaslct_src.lib.docker.docker_create_image_task import DockerCreateImageTas
 
 class ExportContainerTasksCreator():
 
-    def __init__(self, export_path: str, release_name: str):
+    def __init__(self, flavor_path: str, export_path: str, release_name: str):
+        self.flavor_path = flavor_path
         self.release_name = release_name
         self.export_path = export_path
 
-    def create_export_tasks(self, flavor_path: str,
-                            build_tasks: Dict[str, DockerCreateImageTask]) \
+    def create_export_tasks(self, build_tasks: Dict[str, DockerCreateImageTask]) \
             -> Dict[str, ExportContainerTask]:
-        return {release_type: self._create_export_task(release_type, flavor_path, build_task)
+        return {release_type: self._create_export_task(release_type, build_task)
                 for release_type, build_task in build_tasks.items()}
 
-    def _create_export_task(self, release_type: str, flavor_path: str,
+    def _create_export_task(self, release_type: str,
                             build_task: DockerCreateImageTask) -> ExportContainerTask:
         required_task_info = self._create_required_task_info(build_task)
         return \
@@ -26,7 +26,7 @@ class ExportContainerTasksCreator():
                 export_path=self.export_path,
                 release_name=self.release_name,
                 release_type=release_type,
-                flavor_path=flavor_path)
+                flavor_path=self.flavor_path)
 
     def _create_required_task_info(self, build_task) -> RequiredTaskInfo:
         required_task_info = \
