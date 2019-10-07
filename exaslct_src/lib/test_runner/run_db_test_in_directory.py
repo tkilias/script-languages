@@ -17,11 +17,11 @@ class RunDBTestsInDirectory(FlavorBaseTask,
     directory = luigi.Parameter()
 
     def extend_output_path(self):
-        return self.caller_output_path + [self.directory]
+        return self.caller_output_path + (self.directory,)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._test_container_info = self.test_evironment_info.test_container_info
+        self._test_container_info = self.test_environment_info.test_container_info
         self._client = docker_client_config().get_client()
         self.test_container = self._client.containers.get(self._test_container_info.container_name)
         self.tasks = self.create_test_tasks_from_directory(self.test_container, self.directory)

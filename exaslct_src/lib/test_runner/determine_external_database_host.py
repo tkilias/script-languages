@@ -13,13 +13,11 @@ class DetermineExternalDatabaseHost(DependencyLoggerBaseTask,ExternalDatabaseHos
     network_info = JsonPickleParameter(DockerNetworkInfo,significant=False) # type: DockerNetworkInfo
     attempt = luigi.IntParameter(1)
 
-
     def run_task(self):
-        network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         database_host = self.external_exasol_db_host
         if self.external_exasol_db_host == "localhost" or \
                 self.external_exasol_db_host == "127.0.01":
-            database_host = network_info.gateway
+            database_host = self.network_info.gateway
         database_info = DatabaseInfo(database_host,
                                      self.external_exasol_db_port,
                                      self.external_exasol_bucketfs_port)
