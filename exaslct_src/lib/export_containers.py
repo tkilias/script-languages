@@ -8,11 +8,10 @@ from exaslct_src.lib.data.release_info import ExportInfo
 from exaslct_src.lib.docker_flavor_build_base import DockerFlavorBuildBase
 from exaslct_src.lib.export_container_tasks_creator import ExportContainerTasksCreator
 from exaslct_src.lib.flavor_task import FlavorsBaseTask
-from exaslct_src.lib.release_type import ReleaseType
 
 
 class ExportContainerParameter(Config):
-    release_types = luigi.ListParameter(["Release"])
+    release_goals = luigi.ListParameter(["release"])
     export_path = luigi.OptionalParameter(None)
     release_name = luigi.OptionalParameter(None)
     # TOOD force export
@@ -55,19 +54,14 @@ class ExportContainers(FlavorsBaseTask, ExportContainerParameter):
 class ExportFlavorContainer(DockerFlavorBuildBase, ExportContainerParameter):
 
     def get_goals(self):
-        self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
-        release_type_goal_map = {ReleaseType.Release: "release",
-                                 ReleaseType.BaseTest: "base_test_build_run",
-                                 ReleaseType.FlavorTest: "flavor_test_build_run"}
-        goals = [release_type_goal_map[release_type] for release_type in self.actual_release_types]
-        return goals
+        return set(self.release_goals)
 
     def run_task(self):
         build_tasks = self.create_build_tasks(not build_config().force_rebuild)
         tasks_creator = ExportContainerTasksCreator(flavor_path=self.flavor_path,
                                                     export_path=self.export_path,
                                                     release_name=self.release_name)
-        export_tasks = tasks_creator.create_export_tasks(self.flavor_path, build_tasks)
+        export_tasks = tasks_creator.create_export_tasks(build_tasks)
         export_info_futures = yield from self.run_dependencies(export_tasks)
         export_infos = self.get_values_from_futures(export_info_futures)
         self.return_object(export_infos)

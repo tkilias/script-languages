@@ -23,8 +23,8 @@ class DockerUploadTest(unittest.TestCase):
     def test_docker_upload(self):
         self.path_in_bucket = "test"
         self.release_name = "TEST"
-        self.bucketfs_name = "bfsdefault",
-        self.bucket_name = "default",
+        self.bucketfs_name = "bfsdefault"
+        self.bucket_name = "default"
         arguments = " ".join([
                               f"--database-host {self.docker_environment.database_host}",
                               f"--bucketfs-port {self.docker_environment.bucketfs_port}",

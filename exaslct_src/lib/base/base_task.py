@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Generator, Any, Union
 
+import luigi
 from luigi import Task, util
 from luigi.parameter import ParameterVisibility
 
@@ -61,6 +62,7 @@ class RunTaskFuture(AbstractTaskFuture):
 
 
 class BaseTask(Task):
+    caller_output_path = luigi.ListParameter([], significant=False, visibility=ParameterVisibility.HIDDEN)
 
     def __init__(self, *args, **kwargs):
         self._registered_tasks = []
@@ -95,9 +97,19 @@ class BaseTask(Task):
     def get_output_path(self) -> Path:
         path = Path(self._get_output_path_for_job(),
                     "outputs",
-                    self.task_id)
+                    Path(*self._extend_output_path()))
         path.mkdir(parents=True, exist_ok=True)
         return path
+
+    def _extend_output_path(self):
+        extension = self.extend_output_path()
+        if extension is None or extension == []:
+            return self.task_id
+        else:
+            return extension
+
+    def extend_output_path(self):
+        return list(self.caller_output_path) + [self.task_id]
 
     def get_log_path(self) -> Path:
         path = Path(self.get_output_path(), "logs")
@@ -216,7 +228,14 @@ class BaseTask(Task):
 
         return task_str
 
-    def create_task_with_common_params(self, task_class, **kwargs):
+    def create_child_task_with_common_params(self, task_class, **kwargs):
         params = util.common_params(self, task_class)
+        params["caller_output_path"] = self._extend_output_path()
+        params.update(kwargs)
+        return task_class(**params)
+
+    def create_child_task(self, task_class, **kwargs):
+        params = {}
+        params["caller_output_path"] = self._extend_output_path()
         params.update(kwargs)
         return task_class(**params)

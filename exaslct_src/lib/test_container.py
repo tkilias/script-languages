@@ -1,85 +1,58 @@
+from typing import Dict
+
+import jsonpickle
 import luigi
 
-from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.flavor_task import FlavorTask
-from exaslct_src.lib.stoppable_task import StoppableTask
-from exaslct_src.lib.release_type import ReleaseType
-
+from exaslct_src.lib.flavor_task import FlavorBaseTask, FlavorsBaseTask
+from exaslct_src.lib.test_runner.run_db_tests_parameter import GeneralRunDBTestParameter, \
+    RunDBTestsInTestConfigParameter
 from exaslct_src.lib.test_runner.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
-from exaslct_src.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask, StopTestEnvironment
+from exaslct_src.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
 
 
-class TestContainer(FlavorTask, SpawnTestEnvironmentParameter):
-    release_types = luigi.ListParameter(["Release"])
-    generic_language_tests = luigi.ListParameter([])
-    test_folders = luigi.ListParameter([])
-    test_files = luigi.ListParameter([])
-    test_restrictions = luigi.ListParameter([])
+class TestContainerParameter(RunDBTestsInTestConfigParameter,
+                             GeneralRunDBTestParameter):
+    release_goals = luigi.ListParameter(["release"])
     languages = luigi.ListParameter([None])
-    test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
-
-    test_log_level = luigi.Parameter("critical", significant=False)
     reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
 
+
+class TestContainer(FlavorsBaseTask,
+                    TestContainerParameter,
+                    SpawnTestEnvironmentParameter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        command_line_output_path = self.get_output_path().joinpath("command_line_output")
+        self.command_line_output_target = luigi.LocalTarget(str(command_line_output_path))
 
-        self._prepare_outputs()
-        stoppable_task = StoppableTask()
-        if stoppable_task.failed_target.exists():
-            stoppable_task.failed_target.remove()
-        self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
+    def register_required(self):
+        tasks = self.create_tasks_for_flavors_with_common_params(
+            TestFlavorContainer)  # type: Dict[str,TestFlavorContainer]
+        self.test_results_futures = self.register_dependencies(tasks)
 
-    def requires_tasks(self):
-        return [self.generate_tasks_for_flavor(flavor_path, release_type)
-                for flavor_path in self.actual_flavor_paths
-                for release_type in self.actual_release_types]
+    def run_task(self):
+        test_results = self.get_values_from_futures(
+            self.test_results_futures)
+        print("Test Results")
+        jsonpickle.set_preferred_backend('simplejson')
+        jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=2)
+        print(jsonpickle.encode(test_results))
 
-    def generate_tasks_for_flavor(self, flavor_path, release_type: ReleaseType):
-        args = dict(flavor_path=flavor_path,
-                    reuse_uploaded_container=self.reuse_uploaded_container,
-                    generic_language_tests=self.generic_language_tests,
-                    test_folders=self.test_folders,
-                    test_restrictions=self.test_restrictions,
-                    log_level=self.test_log_level,
-                    test_environment_vars=self.test_environment_vars,
-                    languages=self.languages,
-                    test_files=self.test_files,
-                    release_type=release_type.name,
-                    environment_type=self.environment_type,
-                    reuse_database_setup=self.reuse_database_setup,
-                    reuse_test_container=self.reuse_test_container,
-                    docker_db_image_name=self.docker_db_image_name,
-                    docker_db_image_version=self.docker_db_image_version,
-                    reuse_database=self.reuse_database,
-                    database_port_forward=self.database_port_forward,
-                    bucketfs_port_forward=self.bucketfs_port_forward,
-                    max_start_attempts=self.max_start_attempts,
-                    external_exasol_db_host=self.external_exasol_db_host,
-                    external_exasol_db_port=self.external_exasol_db_port,
-                    external_exasol_bucketfs_port=self.external_exasol_bucketfs_port,
-                    external_exasol_db_user=self.external_exasol_db_user,
-                    external_exasol_db_password=self.external_exasol_db_password,
-                    external_exasol_bucketfs_write_password=self.external_exasol_bucketfs_write_password
-                    )
-        return TestRunnerDBTestTask(**args)
 
-    def _prepare_outputs(self):
-        self._target = luigi.LocalTarget(
-            "%s/logs/test-runner/db-test/tests/current"
-            % (build_config().output_directory))
-        if self._target.exists():
-            self._target.remove()
+class TestFlavorContainer(FlavorBaseTask,
+                          TestContainerParameter,
+                          SpawnTestEnvironmentParameter):
 
-    def output(self):
-        return self._target
+    def register_required(self):
+        tasks = [self.generate_tasks_for_flavor(release_goal)
+                 for release_goal in self.release_goals]
+        self.test_result_futures = self.register_dependencies(tasks)
 
-    def run(self):
-        with self.output().open("w") as out_file:
-            for release in self.input():
-                # for in_target in releases:
-                with release.open("r") as in_file:
-                    out_file.write(in_file.read())
-                    out_file.write("\n")
-                    out_file.write("=================================================")
-                    out_file.write("\n")
+    def generate_tasks_for_flavor(self, release_goal: str):
+        task = self.create_child_task_with_common_params(TestRunnerDBTestTask,
+                                                         release_goal=release_goal)
+        return task
+
+    def run_task(self):
+        test_results = self.get_values_from_futures(self.test_result_futures)
+        self.return_object(test_results)

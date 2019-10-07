@@ -17,16 +17,16 @@ from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.data.release_info import ExportInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.flavor import flavor
+from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 from exaslct_src.lib.test_runner.create_export_directory import CreateExportDirectory
 
 
-class ExportContainerBaseTask(DependencyLoggerBaseTask):
+class ExportContainerBaseTask(FlavorBaseTask):
     logger = logging.getLogger('luigi-interface')
-    flavor_path = luigi.Parameter()
     export_path = luigi.OptionalParameter(None)
     release_name = luigi.OptionalParameter(None)
-    release_type = luigi.Parameter(None)
+    release_goal = luigi.Parameter(None)
 
     def register_required(self):
         self._export_directory_future = self.register_dependency(CreateExportDirectory())
@@ -61,14 +61,11 @@ class ExportContainerBaseTask(DependencyLoggerBaseTask):
             hash=str(image_info_of_release_image.hash),
             is_new=is_new,
             depends_on_image=image_info_of_release_image,
-            release_type=str(self.release_type),
+            release_goal=str(self.release_goal),
             release_name=str(self.release_name),
             output_file=str(output_file)
         )
         return export_info
-
-    def get_flavor_name(self):
-        return flavor.get_name_from_path(self.flavor_path)
 
     def _get_cache_file_path(self, image_info_of_release_image):
         release_image_name = image_info_of_release_image.get_target_complete_name()
@@ -84,7 +81,7 @@ class ExportContainerBaseTask(DependencyLoggerBaseTask):
                 suffix = f"""_{self.release_name}"""
             else:
                 suffix = ""
-            file_name = f"""{self.get_flavor_name()}_{self.release_type}{suffix}.tar.gz"""
+            file_name = f"""{self.get_flavor_name()}_{self.release_goal}{suffix}.tar.gz"""
             output_file = Path(self.export_path, file_name)
             if not output_file.exists() or is_new:
                 output_file.parent.mkdir(exist_ok=True, parents=True)

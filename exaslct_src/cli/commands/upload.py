@@ -29,7 +29,7 @@ from exaslct_src.lib.upload_containers import UploadContainers
 @add_options(docker_repository_options)
 @add_options(system_options)
 def upload(flavor_path: Tuple[str, ...],
-           release_type: str,
+           release_goal: str,
            database_host: str,
            bucketfs_port: int,
            bucketfs_username: str,
@@ -81,7 +81,7 @@ def upload(flavor_path: Tuple[str, ...],
 
     set_job_id(UploadContainers.__name__)
     task_creator = lambda: UploadContainers(flavor_paths=list(flavor_path),
-                                            release_types=list([release_type]),
+                                            release_goals=list([release_goal]),
                                             database_host=database_host,
                                             bucketfs_port=bucketfs_port,
                                             bucketfs_username=bucketfs_username,

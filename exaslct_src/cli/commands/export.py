@@ -20,7 +20,7 @@ from exaslct_src.lib.export_containers import ExportContainers
 @add_options(docker_repository_options)
 @add_options(system_options)
 def export(flavor_path: Tuple[str, ...],
-           release_type: str,
+           release_goal: str,
            export_path: str,
            release_name: str,
            force_rebuild: bool,
@@ -61,7 +61,7 @@ def export(flavor_path: Tuple[str, ...],
                                  target_docker_tag_prefix, "target")
     set_job_id(ExportContainers.__name__)
     task_creator = lambda: ExportContainers(flavor_paths=list(flavor_path),
-                                            release_types=list([release_type]),
+                                            release_goals=list(release_goal),
                                             export_path=export_path,
                                             release_name=release_name
                                             )

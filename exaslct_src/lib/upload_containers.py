@@ -5,7 +5,6 @@ import luigi
 from exaslct_src.lib.docker_flavor_build_base import DockerFlavorBuildBase
 from exaslct_src.lib.export_container_tasks_creator import ExportContainerTasksCreator
 from exaslct_src.lib.flavor_task import FlavorsBaseTask
-from exaslct_src.lib.release_type import ReleaseType
 from exaslct_src.lib.upload_container_tasks_creator import UploadContainerTasksCreator
 from exaslct_src.lib.upload_containers_parameter import UploadContainersParameter
 
@@ -28,7 +27,7 @@ class UploadContainers(FlavorsBaseTask, UploadContainersParameter):
         self.write_command_line_output(uploads)
 
     def write_command_line_output(self, uploads):
-        with self._upload_target.open("w") as out_file:
+        with self.command_line_output_target.open("w") as out_file:
             for releases in uploads.values():
                 for command_line_output_str in releases.values():
                     out_file.write(command_line_output_str)
@@ -40,12 +39,7 @@ class UploadContainers(FlavorsBaseTask, UploadContainersParameter):
 class UploadFlavorContainers(DockerFlavorBuildBase, UploadContainersParameter):
 
     def get_goals(self):
-        self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
-        release_type_goal_map = {ReleaseType.Release: "release",
-                                 ReleaseType.BaseTest: "base_test_build_run",
-                                 ReleaseType.FlavorTest: "flavor_test_build_run"}
-        goals = [release_type_goal_map[release_type] for release_type in self.actual_release_types]
-        return goals
+        return set(self.release_goals)
 
     def run_task(self):
         build_tasks = self.create_build_tasks()
@@ -53,8 +47,9 @@ class UploadFlavorContainers(DockerFlavorBuildBase, UploadContainersParameter):
         export_tasks = self.create_export_tasks(build_tasks)
         upload_tasks = self.create_upload_tasks(export_tasks)
 
-        command_line_output_str = yield from self.run_dependencies(upload_tasks)
-        self.return_object(command_line_output_str)
+        command_line_output_string_futures = yield from self.run_dependencies(upload_tasks)
+        command_line_output_strings = self.get_values_from_futures(command_line_output_string_futures)
+        self.return_object(command_line_output_strings)
 
     def create_upload_tasks(self, export_tasks):
         upload_tasks_creator = UploadContainerTasksCreator(self)

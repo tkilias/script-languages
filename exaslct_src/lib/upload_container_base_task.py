@@ -17,7 +17,7 @@ class UploadContainerBaseTask(FlavorBaseTask, UploadContainerParameter):
     # TODO add error checks and propose reasons for the error
     # TODO extract bucketfs interaction into own module
 
-    release_type = luigi.Parameter()
+    release_goal = luigi.Parameter()
 
     def register_required(self):
         task = self.get_export_task()
@@ -43,7 +43,7 @@ class UploadContainerBaseTask(FlavorBaseTask, UploadContainerParameter):
     def generate_command_line_output_str(self,
                                          language_definition: LanguageDefinition,
                                          export_info: ExportInfo):
-        flavor_name = flavor.get_name_from_path(self.flavor_path)
+        flavor_name = self.get_flavor_name()
         try:
             release_path = Path(export_info.cache_file).relative_to(Path(".").absolute())
         except ValueError as e:
@@ -53,7 +53,7 @@ class UploadContainerBaseTask(FlavorBaseTask, UploadContainerParameter):
             {self._get_upload_url(export_info, without_login=True)}
             
             
-            In SQL you can activate the languages supported by the {flavor_name} 
+            In SQL, you can activate the languages supported by the {flavor_name} 
             flavor by using the following statements:
             
             
@@ -88,7 +88,7 @@ class UploadContainerBaseTask(FlavorBaseTask, UploadContainerParameter):
         return url
 
     def _get_complete_release_name(self, release_info: ExportInfo):
-        complete_release_name = f"""{release_info.name}-{release_info.release_type}-{self._get_release_name(
+        complete_release_name = f"""{release_info.name}-{release_info.release_goal}-{self._get_release_name(
             release_info)}"""
         return complete_release_name
 

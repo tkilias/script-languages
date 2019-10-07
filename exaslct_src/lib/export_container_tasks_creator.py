@@ -14,10 +14,10 @@ class ExportContainerTasksCreator():
 
     def create_export_tasks(self, build_tasks: Dict[str, DockerCreateImageTask]) \
             -> Dict[str, ExportContainerTask]:
-        return {release_type: self._create_export_task(release_type, build_task)
-                for release_type, build_task in build_tasks.items()}
+        return {release_goal: self._create_export_task(release_goal, build_task)
+                for release_goal, build_task in build_tasks.items()}
 
-    def _create_export_task(self, release_type: str,
+    def _create_export_task(self, release_goal: str,
                             build_task: DockerCreateImageTask) -> ExportContainerTask:
         required_task_info = self._create_required_task_info(build_task)
         return \
@@ -25,7 +25,7 @@ class ExportContainerTasksCreator():
                 required_task_info=required_task_info,
                 export_path=self.export_path,
                 release_name=self.release_name,
-                release_type=release_type,
+                release_goal=release_goal,
                 flavor_path=self.flavor_path)
 
     def _create_required_task_info(self, build_task) -> RequiredTaskInfo:

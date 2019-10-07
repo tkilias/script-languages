@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 from typing import Dict, Any
 
 import luigi
@@ -13,7 +13,7 @@ class FlavorsBaseTask(DependencyLoggerBaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for flavor_path in self.flavor_paths:
-            if not pathlib.Path(flavor_path).is_dir():
+            if not Path(flavor_path).is_dir():
                 raise OSError("Flavor path %s not a directory." % flavor_path)
 
     def create_tasks_for_flavors_with_common_params(self, cls, **kwargs) -> Dict[str, Any]:
@@ -22,7 +22,7 @@ class FlavorsBaseTask(DependencyLoggerBaseTask):
 
     def _create_task_for_with_common_params(self, cls, flavor_path, kwargs):
         params = {**kwargs, "flavor_path": flavor_path}
-        task = self.create_task_with_common_params(cls, **params)
+        task = self.create_child_task_with_common_params(cls, **params)
         return task
 
 
@@ -31,8 +31,13 @@ class FlavorBaseTask(DependencyLoggerBaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not pathlib.Path(self.flavor_path).is_dir():
+        if not Path(self.flavor_path).is_dir():
             raise OSError("Flavor path %s not a directory." % self.flavor_path)
+
+    def get_flavor_name(self):
+        path = Path(self.flavor_path)
+        flavor_name = path.name
+        return flavor_name
 
 
 class FlavorTask(StoppableTask):

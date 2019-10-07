@@ -73,7 +73,7 @@ class TestParameter(Config):
 class TestTask7(TestBaseTask, TestParameter):
 
     def register_required(self):
-        task8 = self.create_task_with_common_params(TestTask8, new_parameter="new")
+        task8 = self.create_child_task_with_common_params(TestTask8, new_parameter="new")
         self.task8_future = self.register_dependency(task8)
 
     def run_task(self):

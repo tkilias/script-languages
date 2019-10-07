@@ -24,5 +24,5 @@ class ExportContainerTask(ExportContainerBaseTask):
         instance = class_(**self.required_task_info.params)
         return instance
 
-    def get_release_type(self):
-        return self.release_type
+    def get_release_goal(self):
+        return self.release_goal
