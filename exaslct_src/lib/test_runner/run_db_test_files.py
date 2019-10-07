@@ -15,7 +15,7 @@ class RunDBTestFiles(FlavorBaseTask,
                      DatabaseCredentialsParameter):
 
     def extend_output_path(self):
-        return self.caller_output_path + ["test_files"]
+        return self.caller_output_path + ("test_files",)
 
     def run_task(self):
         results = []

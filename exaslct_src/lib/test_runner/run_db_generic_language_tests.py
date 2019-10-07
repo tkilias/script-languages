@@ -14,7 +14,7 @@ class RunDBGenericLanguageTest(FlavorBaseTask,
                                DatabaseCredentialsParameter):
 
     def extend_output_path(self):
-        return self.caller_output_path + ["generic"]
+        return self.caller_output_path + ("generic",)
 
     def run_task(self):
         results = []

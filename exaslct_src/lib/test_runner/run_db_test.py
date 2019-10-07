@@ -23,12 +23,12 @@ class RunDBTest(FlavorBaseTask,
         if self.language is not None:
             extension.append(self.language)
         extension.append(test_file_name)
-        return self.caller_output_path + extension
+        return self.caller_output_path + tuple(extension)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._test_container_info = self.test_evironment_info.test_container_info
-        self._database_info = self.test_evironment_info.database_info
+        self._test_container_info = self.test_environment_info.test_container_info
+        self._database_info = self.test_environment_info.database_info
         self._client = docker_client_config().get_client()
 
     def __del__(self):
@@ -63,9 +63,7 @@ class RunDBTest(FlavorBaseTask,
         self.return_object(result)
 
     def run_test_command(self, bash_cmd, test_container):
-        still_running_logger = StillRunningLogger(self.logger,
-                                                  "db tests of flavor %s and release %s in %s"
-                                                  % (self.flavor_name, self.release_goal, self.test_file))
+        still_running_logger = StillRunningLogger(self.logger,"db tests")
         thread = StillRunningLoggerThread(still_running_logger)
         thread.start()
         environment = FrozenDictToDict().convert(self.test_environment_vars)
@@ -77,7 +75,7 @@ class RunDBTest(FlavorBaseTask,
 
     def generate_test_command(self):
         credentials = f"--user '{self.db_user}' --password '{self.db_password}'"
-        log_level = f"--loglevel={self.log_level}"
+        log_level = f"--loglevel={self.test_log_level}"
         server = f"--server '{self._database_info.host}:{self._database_info.db_port}'"
         environment = "--driver=/downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so  " \
                       "--jdbc-path /downloads/JDBC/exajdbc.jar"

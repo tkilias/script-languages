@@ -62,19 +62,19 @@ class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentP
         self.return_object(database_info)
 
     def _try_to_reuse_database(self, db_ip_address: str) -> DatabaseInfo:
-        self.logger.info("Task %s: Try to reuse database container %s",
-                         self.__repr__(), self.db_container_name)
+        self.logger.info("Try to reuse database container %s",
+                          self.db_container_name)
         database_info = None
         try:
             database_info = self._create_database_info(db_ip_address)
         except Exception as e:
-            self.logger.warning("Task %s: Tried to reuse database container %s, but got Exeception %s. "
-                                "Fallback to create new database.", self.__repr__(), self.db_container_name, e)
+            self.logger.warning("Tried to reuse database container %s, but got Exeception %s. "
+                                "Fallback to create new database.", self.db_container_name, e)
         return database_info
 
     def _handle_output(self, output_generator, image_info: ImageInfo):
         log_file_path = self.prepate_log_file_path(image_info)
-        with PullLogHandler(log_file_path, self.logger, self.__repr__(), image_info) as log_hanlder:
+        with PullLogHandler(log_file_path, self.logger, image_info) as log_hanlder:
             still_running_logger = StillRunningLogger(
                 self.logger, "pull image %s" % image_info.get_source_complete_name())
             for log_line in output_generator:
@@ -188,14 +188,14 @@ class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentP
     def _remove_container(self, db_volume_preperation_container_name):
         try:
             self._client.containers.get(db_volume_preperation_container_name).remove(force=True)
-            self.logger.info("Task %s: Removed container %s", self.__repr__(), db_volume_preperation_container_name)
+            self.logger.info("Removed container %s", db_volume_preperation_container_name)
         except docker.errors.NotFound:
             pass
 
     def _remove_volume(self, db_volume_name):
         try:
             self._client.volumes.get(db_volume_name).remove(force=True)
-            self.logger.info("Task %s: Removed volume %s", self.__repr__(), db_volume_name)
+            self.logger.info("Removed volume %s", db_volume_name)
         except docker.errors.NotFound:
             pass
 
