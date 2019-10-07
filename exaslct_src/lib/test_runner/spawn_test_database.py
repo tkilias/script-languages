@@ -73,23 +73,13 @@ class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentP
         return database_info
 
     def _handle_output(self, output_generator, image_info: ImageInfo):
-        log_file_path = self.prepate_log_file_path(image_info)
+        log_file_path = self.get_log_path().joinpath("pull_docker_db_image.log")
         with PullLogHandler(log_file_path, self.logger, image_info) as log_hanlder:
             still_running_logger = StillRunningLogger(
                 self.logger, "pull image %s" % image_info.get_source_complete_name())
             for log_line in output_generator:
                 still_running_logger.log()
                 log_hanlder.handle_log_line(log_line)
-
-    def prepate_log_file_path(self, image_info: ImageInfo):
-        log_file_path = pathlib.Path("%s/logs/docker-pull/%s/%s/%s"
-                                     % (build_config().output_directory,
-                                        image_info.source_repository_name, image_info.source_tag,
-                                        datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
-        log_file_path = luigi.LocalTarget(str(log_file_path))
-        if log_file_path.exists():
-            log_file_path.remove()
-        return log_file_path
 
     def _create_database_container(self, db_ip_address: str, db_private_network: str):
         self.logger.info("Starting database container %s", self.db_container_name)

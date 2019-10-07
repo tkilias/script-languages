@@ -40,48 +40,35 @@ class WaitForTestDockerDatabase(DependencyLoggerBaseTask, DatabaseCredentialsPar
         test_container = self._client.containers.get(self.test_container_info.container_name)
         db_container_name = self.database_info.container_info.container_name
         db_container = self._client.containers.get(db_container_name)
-        database_log_path = \
-            pathlib.Path("%s/logs/environment/%s/database/%s/"
-                         % (build_config().output_directory,
-                            self.environment_name,
-                            db_container_name))
-
         is_database_ready = \
-            self.wait_for_database_startup(database_log_path, test_container, db_container)
-        after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")
+            self.wait_for_database_startup(test_container, db_container)
+        after_startup_db_log_file = self.get_log_path().joinpath("after_startup_db_log.tar.gz")
         self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
         self.return_object(is_database_ready)
 
-    def wait_for_database_startup(self, database_log_path,
+    def wait_for_database_startup(self,
                                   test_container: Container,
                                   db_container: Container):
         container_log_thread, is_database_ready_thread = \
-            self.start_wait_threads(database_log_path, db_container, test_container)
+            self.start_wait_threads(db_container, test_container)
         is_database_ready = \
             self.wait_for_threads(container_log_thread, is_database_ready_thread)
         self.join_threads(container_log_thread, is_database_ready_thread)
         return is_database_ready
 
-    def start_wait_threads(self, database_log_path, db_container, test_container):
-        startup_log_file = self.prepare_startup_log_file(database_log_path)
+    def start_wait_threads(self, db_container, test_container):
+        startup_log_file = self.get_log_path().joinpath("startup.log")
         container_log_thread = ContainerLogThread(db_container,
                                                   self.logger,
                                                   startup_log_file,
                                                   "Database Startup %s" % db_container.name)
         container_log_thread.start()
-        is_database_ready_thread = IsDatabaseReadyThread(self.__repr__(),
+        is_database_ready_thread = IsDatabaseReadyThread(self.logger,
                                                          self.database_info,
                                                          self.get_database_credentials(),
                                                          test_container)
         is_database_ready_thread.start()
         return container_log_thread, is_database_ready_thread
-
-    def prepare_startup_log_file(self, database_log_path):
-        if database_log_path.exists():
-            shutil.rmtree(database_log_path)
-        database_log_path.mkdir(parents=True)
-        startup_log_file = database_log_path.joinpath("startup.log")
-        return startup_log_file
 
     def join_threads(self, container_log_thread: ContainerLogThread,
                      is_database_ready_thread: IsDatabaseReadyThread):
