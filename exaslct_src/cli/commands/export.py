@@ -70,3 +70,5 @@ def export(flavor_path: Tuple[str, ...],
     if success:
         with task.command_line_output_target.open("r") as f:
             print(f.read())
+    else:
+        exit(-1)

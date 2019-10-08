@@ -171,6 +171,8 @@ def run_db_test(flavor_path: Tuple[str, ...],
         print("Test Results:")
         with task.command_line_output_target.open("r") as f:
             print(f.read())
+    else:
+        exit(-1)
 
 
 def handle_commandline_error(error):

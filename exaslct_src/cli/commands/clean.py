@@ -31,6 +31,8 @@ def clean_flavor_images(flavor_path: Tuple[str, ...],
     set_job_id(CleanExaslcFlavorImages.__name__)
     task_creator = lambda: CleanExaslcFlavorImages(flavor_path=flavor_path[0])
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
+    if not success:
+        exit(-1)
 
 
 @cli.command()
@@ -54,5 +56,7 @@ def clean_all_images(
     set_job_id(CleanExaslcAllImages.__name__)
     task_creator = lambda: CleanExaslcAllImages()
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
+    if not success:
+        exit(-1)
 
 # TODO add commands clean containers, networks, all

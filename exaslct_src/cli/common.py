@@ -10,6 +10,7 @@ import luigi
 import networkx
 from networkx import DiGraph
 
+from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.task_dependency import TaskDependency, DependencyState
 
@@ -84,32 +85,42 @@ def set_job_id(name):
     config.set('job_config', 'job_id', job_id)
 
 
-def run_task(task_creator: Callable[[], luigi.Task],
+def run_task(task_creator: Callable[[], DependencyLoggerBaseTask],
              workers: int,
              task_dependencies_dot_file: str) \
-        -> Tuple[bool, luigi.Task]:
+        -> Tuple[bool, DependencyLoggerBaseTask]:
     setup_worker()
     start_time = datetime.now()
-    task = remove_stoppable_task_targets(task_creator)
+    task = task_creator()
     no_scheduling_errors = luigi.build([task], workers=workers, local_scheduler=True, log_level="INFO")
-    if not StoppableTask().failed_target.exists() and no_scheduling_errors:
-        handle_success(task_dependencies_dot_file, start_time)
+    if not task.failed_target.exists() and no_scheduling_errors:
+        handle_success(task, task_dependencies_dot_file, start_time)
         return True, task
     else:
+        handle_failure(task, task_dependencies_dot_file, start_time)
         return False, task
 
 
-def handle_success(task_dependencies_dot_file: str, start_time: datetime):
-    generate_graph_from_task_dependencies(task_dependencies_dot_file)
+def handle_failure(task: DependencyLoggerBaseTask, task_dependencies_dot_file: str, start_time: datetime):
+    generate_graph_from_task_dependencies(task, task_dependencies_dot_file)
+    timedelta = datetime.now() - start_time
+    print("The command failed after %s s with:" % timedelta.total_seconds())
+    if task.failed_target.exists():
+        with task.failed_target.open("r") as file:
+            print(file.read())
+
+
+def handle_success(task: DependencyLoggerBaseTask, task_dependencies_dot_file: str, start_time: datetime):
+    generate_graph_from_task_dependencies(task, task_dependencies_dot_file)
     timedelta = datetime.now() - start_time
     print("The command took %s s" % timedelta.total_seconds())
 
 
-def generate_graph_from_task_dependencies(task_dependencies_dot_file: str):
+def generate_graph_from_task_dependencies(task: DependencyLoggerBaseTask, task_dependencies_dot_file: str):
     if task_dependencies_dot_file is not None:
         print(f"Generate Task Dependency Graph to {task_dependencies_dot_file}")
         print()
-        dependencies = collect_dependencies()
+        dependencies = collect_dependencies(task)
         g = DiGraph()
         for dependency in dependencies:
             g.add_node(dependency.source, label=dependency.source.representation)
@@ -120,10 +131,9 @@ def generate_graph_from_task_dependencies(task_dependencies_dot_file: str):
         networkx.nx_pydot.write_dot(g, task_dependencies_dot_file)
 
 
-def collect_dependencies() -> Set[TaskDependency]:
-    stoppable_task = StoppableTask()
+def collect_dependencies(task: DependencyLoggerBaseTask) -> Set[TaskDependency]:
     dependencies = set()
-    for root, directories, files in os.walk(stoppable_task.dependencies_dir):
+    for root, directories, files in os.walk(task._get_dependencies_path_for_job()):
         for file in files:
             file_path = Path(root).joinpath(file)
             with open(file_path) as f:
@@ -132,18 +142,6 @@ def collect_dependencies() -> Set[TaskDependency]:
                     if task_dependency.state == DependencyState.requested.name:
                         dependencies.add(task_dependency)
     return dependencies
-
-
-def remove_stoppable_task_targets(tasks_creator):
-    stoppable_task = StoppableTask()
-    if stoppable_task.failed_target.exists():
-        stoppable_task.failed_target.remove()
-    if stoppable_task.timers_dir.exists():
-        shutil.rmtree(str(stoppable_task.timers_dir))
-    if stoppable_task.dependencies_dir.exists():
-        shutil.rmtree(str(stoppable_task.dependencies_dir))
-    tasks = tasks_creator()
-    return tasks
 
 
 def setup_worker():
