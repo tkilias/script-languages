@@ -93,7 +93,7 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
         database_and_test_container_info = \
             self.get_values_from_futures(database_and_test_container_info_future)
         test_container_info = database_and_test_container_info[TEST_CONTAINER]
-        database_info  = database_and_test_container_info[DATABASE]
+        database_info = database_and_test_container_info[DATABASE]
         return database_info, test_container_info
 
     def create_spawn_database_task(self,
@@ -121,22 +121,18 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
     def _setup_test_database(self, test_environment_info: EnvironmentInfo):
         # TODO check if database is setup
         self.logger.info("Setup database")
-        yield [
-            UploadExaJDBC(
-                environment_name=self.environment_name,
+        upload_tasks = [
+            self.create_child_task_with_common_params(
+                UploadExaJDBC,
                 test_environment_info=test_environment_info,
-                reuse_uploaded=self.reuse_database_setup,
-                bucketfs_write_password=self.bucketfs_write_password),
-            UploadVirtualSchemaJDBCAdapter(
-                environment_name=self.environment_name,
+                reuse_uploaded=self.reuse_database_setup),
+            self.create_child_task_with_common_params(
+                UploadVirtualSchemaJDBCAdapter,
                 test_environment_info=test_environment_info,
-                reuse_uploaded=self.reuse_database_setup,
-                bucketfs_write_password=self.bucketfs_write_password),
-            PopulateEngineSmallTestDataToDatabase(
-                environment_name=self.environment_name,
+                reuse_uploaded=self.reuse_database_setup),
+            self.create_child_task_with_common_params(
+                PopulateEngineSmallTestDataToDatabase,
                 test_environment_info=test_environment_info,
-                reuse_data=self.reuse_database_setup,
-                db_user=self.db_user,
-                db_password=self.db_password,
-                bucketfs_write_password=self.bucketfs_write_password
+                reuse_data=self.reuse_database_setup
             )]
+        self.run_dependencies(upload_tasks)
