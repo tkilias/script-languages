@@ -42,7 +42,7 @@ class WaitForTestExternalDatabase(DependencyLoggerBaseTask,
         return is_database_ready
 
     def start_wait_threads(self, test_container):
-        is_database_ready_thread = IsDatabaseReadyThread(self.__repr__(),
+        is_database_ready_thread = IsDatabaseReadyThread(self.logger,
                                                          self.database_info,
                                                          self.get_database_credentials(),
                                                          test_container)

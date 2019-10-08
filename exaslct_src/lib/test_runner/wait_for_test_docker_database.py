@@ -1,7 +1,5 @@
 import gzip
-import logging
 import pathlib
-import shutil
 import time
 from datetime import datetime, timedelta
 
@@ -10,11 +8,9 @@ from docker.models.containers import Container
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.database_info import DatabaseInfo
 from exaslct_src.lib.docker_config import docker_client_config
-from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.is_database_ready_thread import IsDatabaseReadyThread
