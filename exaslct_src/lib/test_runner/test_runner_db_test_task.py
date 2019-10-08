@@ -86,6 +86,7 @@ class TestRunnerDBTestTask(FlavorBaseTask,
         upload_task = self.create_child_task_with_common_params(
             UploadExportedContainer,
             environment_name=self.test_environment_info.name,
+            test_environment_info=self.test_environment_info,
             release_name=export_info.name,
             reuse_uploaded=reuse_release_container,
             bucketfs_write_password=database_credentials.bucketfs_write_password
