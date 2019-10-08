@@ -19,15 +19,15 @@ class SpawnTestEnvironmentWithExternalDB(AbstractSpawnTestEnvironment,
             self.create_child_task_with_common_params(
                 PrepareDockerNetworkForTestEnvironment,
                 reuse=self.reuse_test_container,
-                attempt=attempt
+                attempt=attempt,
+                test_container_name=self.test_container_name,
+                network_name=self.network_name
             )
 
     def create_spawn_database_task(self, network_info: DockerNetworkInfo, attempt: int):
         return \
             self.create_child_task_with_common_params(
                 DetermineExternalDatabaseHost,
-                test_container_name=self.test_container_name,
-                network_name=self.network_name,
                 network_info=network_info,
                 attempt=attempt
             )
