@@ -2,6 +2,7 @@ from pathlib import Path
 
 import luigi
 
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.data.info import FrozenDictToDict
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.flavor_task import FlavorBaseTask
@@ -60,6 +61,7 @@ class RunDBTest(FlavorBaseTask,
             language=self.language,
             is_test_ok=is_test_ok,
             test_output_file=test_output_file)
+        JsonPickleTarget(self.get_output_path().joinpath("test_result.json")).write(result, 4)
         self.return_object(result)
 
     def run_test_command(self, bash_cmd, test_container):

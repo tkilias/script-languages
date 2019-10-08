@@ -22,8 +22,9 @@ class RunDBGenericLanguageTest(FlavorBaseTask,
         for language in self.generic_language_tests:
             test_result = yield from self.run_test(language, "generic")
             results.append(test_result)
-        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_result, 4)
-        self.return_object(RunDBTestFoldersResult(test_results=results))
+        test_results = RunDBTestFoldersResult(test_results=results)
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_results, 4)
+        self.return_object(test_results)
 
     def run_test(self, language: str, test_folder: str) -> \
             Generator[RunDBTestsInDirectory, Any, RunDBTestDirectoryResult]:

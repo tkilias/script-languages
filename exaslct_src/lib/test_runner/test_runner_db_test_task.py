@@ -82,7 +82,6 @@ class TestRunnerDBTestTask(FlavorBaseTask,
                               export_info,
                               reuse_release_container)
         test_results = yield from self.run_test(self.test_environment_info)
-        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_results,4)
         self.return_object(test_results)
 
     def upload_container(self, database_credentials, export_info, reuse_release_container):

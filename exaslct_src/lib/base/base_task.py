@@ -95,7 +95,6 @@ class BaseTask(Task):
         param_str = json.dumps(params, separators=(',', ':'), sort_keys=True)
         hash_input = job_config().job_id + param_str
         param_hash = hashlib.sha3_256(hash_input.encode('utf-8')).hexdigest()
-        print("my id", param_hash)
         return '{}_{}'.format(task_family, param_hash[:TASK_ID_TRUNCATE_HASH])
 
     def get_parameter_as_string_dict(self):

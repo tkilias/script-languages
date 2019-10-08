@@ -3,6 +3,7 @@ from typing import Any, Generator
 import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_generic_language_tests import RunDBGenericLanguageTest
@@ -29,6 +30,7 @@ class RunDBTestsInTestConfig(FlavorBaseTask,
                                               generic_language_tests_output=generic_language_test_output,
                                               test_folders_output=test_folders_output,
                                               test_files_output=test_files_output)
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(result,4)
         self.return_object(result)
 
     def run_generic_language_test(self) -> \

@@ -27,8 +27,9 @@ class RunDBTestFiles(FlavorBaseTask,
                 results_for_language.append(test_result)
             results.append(RunDBTestCollectionResult(language=language,
                                                      test_results=results_for_language))
-        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_result, 4)
-        self.return_object(RunDBTestFilesResult(test_results=results))
+        test_results=RunDBTestFilesResult(test_results=results)
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_results, 4)
+        self.return_object(test_results)
 
     def run_test(self, language: str, test_file: str) -> \
             Generator[RunDBTestsInDirectory, Any, RunDBTestResult]:
