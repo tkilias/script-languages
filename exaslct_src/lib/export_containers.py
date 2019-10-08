@@ -58,9 +58,7 @@ class ExportFlavorContainer(DockerFlavorBuildBase, ExportContainerParameter):
 
     def run_task(self):
         build_tasks = self.create_build_tasks(not build_config().force_rebuild)
-        tasks_creator = ExportContainerTasksCreator(flavor_path=self.flavor_path,
-                                                    export_path=self.export_path,
-                                                    release_name=self.release_name)
+        tasks_creator = ExportContainerTasksCreator(self, self.export_path)
         export_tasks = tasks_creator.create_export_tasks(build_tasks)
         export_info_futures = yield from self.run_dependencies(export_tasks)
         export_infos = self.get_values_from_futures(export_info_futures)

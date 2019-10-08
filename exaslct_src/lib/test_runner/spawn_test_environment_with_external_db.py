@@ -14,36 +14,29 @@ from exaslct_src.lib.test_runner.wait_for_external_database import WaitForTestEx
 class SpawnTestEnvironmentWithExternalDB(AbstractSpawnTestEnvironment,
                                          ExternalDatabaseHostParameter):
 
-    def create_network_task(self, attempt:int):
+    def create_network_task(self, attempt: int):
         return \
-            PrepareDockerNetworkForTestEnvironment(
-                environment_name=self.environment_name,
-                test_container_name=self.test_container_name,
-                network_name=self.network_name,
+            self.create_child_task_with_common_params(
+                PrepareDockerNetworkForTestEnvironment,
                 reuse=self.reuse_test_container,
                 attempt=attempt
             )
 
-    def create_spawn_database_task(self, network_info:DockerNetworkInfo, attempt:int):
+    def create_spawn_database_task(self, network_info: DockerNetworkInfo, attempt: int):
         return \
-            DetermineExternalDatabaseHost(
-                environment_name=self.environment_name,
-                external_exasol_db_host=self.external_exasol_db_host,
-                external_exasol_db_port=self.external_exasol_db_port,
-                external_exasol_bucketfs_port=self.external_exasol_bucketfs_port,
+            self.create_child_task_with_common_params(
+                DetermineExternalDatabaseHost,
                 network_info=network_info,
                 attempt=attempt
             )
 
     def create_wait_for_database_task(self,
-                                      attempt:int,
-                                      database_info:DatabaseInfo,
-                                      test_container_info:ContainerInfo):
-        return WaitForTestExternalDatabase(
-            environment_name=self.environment_name,
-            test_container_info=test_container_info,
-            database_info=database_info,
-            attempt=attempt,
-            db_user=self.db_user,
-            db_password=self.db_password,
-            bucketfs_write_password=self.bucketfs_write_password)
+                                      attempt: int,
+                                      database_info: DatabaseInfo,
+                                      test_container_info: ContainerInfo):
+        return \
+            self.create_child_task_with_common_params(
+                WaitForTestExternalDatabase,
+                test_container_info=test_container_info,
+                database_info=database_info,
+                attempt=attempt)

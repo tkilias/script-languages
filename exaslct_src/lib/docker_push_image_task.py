@@ -20,5 +20,5 @@ class DockerPushImageTask(DockerPushImageBaseTask):
     def get_docker_image_task(self):
         module = importlib.import_module(self.required_task_info.module_name)
         class_ = getattr(module, self.required_task_info.class_name)
-        instance = class_(**self.required_task_info.params)
+        instance = self.create_child_task(class_, **self.required_task_info.params)
         return instance

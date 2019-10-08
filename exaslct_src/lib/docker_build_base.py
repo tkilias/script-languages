@@ -72,10 +72,11 @@ class DockerBuildBase(DependencyLoggerBaseTask):
             task_for_image_info = self._create_build_task_with_dependencies(image_info, shortcut_build)
             return task_for_image_info
         else:
+            image_name = f"{image_info.target_repository_name}:{image_info.target_tag}"
             task_for_image_info = \
-                DockerCreateImageTask(
-                    image_name=f"{image_info.target_repository_name}:{image_info.target_tag}",
-                    image_info=image_info)
+                self.create_child_task(DockerCreateImageTask,
+                                       image_name=image_name,
+                                       image_info=image_info)
             return task_for_image_info
 
     def _build_with_depenencies_is_requested(self, image_info: ImageInfo, shortcut_build: bool):
@@ -93,11 +94,12 @@ class DockerBuildBase(DependencyLoggerBaseTask):
         required_task_infos = self._create_required_task_infos(required_tasks)
         image_info_copy = copy.copy(image_info)  # TODO looks not nice
         image_info_copy.depends_on_images = {}
+        image_name = f"{image_info.target_repository_name}:{image_info.target_tag}"
         task_for_image_info = \
-            DockerCreateImageTaskWithDeps(
-                image_name=f"{image_info.target_repository_name}:{image_info.target_tag}",
-                image_info=image_info_copy,
-                required_task_infos=required_task_infos)
+            self.create_child_task(DockerCreateImageTaskWithDeps,
+                                   image_name=image_name,
+                                   image_info=image_info_copy,
+                                   required_task_infos=required_task_infos)
         return task_for_image_info
 
     def _create_required_task_infos(

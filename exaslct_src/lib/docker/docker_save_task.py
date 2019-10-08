@@ -61,7 +61,7 @@ class DockerSaveImageBaseTask(DependencyLoggerBaseTask):
     def remove_save_file_if_necassary(self, save_file_path: pathlib.Path):
         save_file_path.parent.mkdir(exist_ok=True, parents=True)
         if save_file_path.exists():
-            os.remove(save_file_path)
+            os.remove(str(save_file_path))
 
     def write_image_to_file(self,
                             save_file_path: pathlib.Path,
@@ -75,7 +75,3 @@ class DockerSaveImageBaseTask(DependencyLoggerBaseTask):
             for chunk in output_generator:
                 still_running_logger.log()
                 file.write(chunk)
-
-    def write_output(self, image_info: ImageInfo):
-        with self._save_info_target.open("w") as file:
-            file.write(image_info.get_target_complete_name())

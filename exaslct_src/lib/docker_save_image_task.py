@@ -18,11 +18,8 @@ class DockerSaveImageTask(DockerSaveImageBaseTask):
                                              visibility=luigi.parameter.ParameterVisibility.HIDDEN,
                                              significant=True)  # type: RequiredTaskInfo
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def get_docker_image_task(self):
         module = importlib.import_module(self.required_task_info.module_name)
         class_ = getattr(module, self.required_task_info.class_name)
-        instance = class_(**self.required_task_info.params)
+        instance = self.create_child_task(class_, **self.required_task_info.params)
         return instance

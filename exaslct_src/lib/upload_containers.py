@@ -57,8 +57,6 @@ class UploadFlavorContainers(DockerFlavorBuildBase, UploadContainersParameter):
         return upload_tasks
 
     def create_export_tasks(self, build_tasks):
-        export_tasks_creator = ExportContainerTasksCreator(flavor_path=self.flavor_path,
-                                                           export_path=None,
-                                                           release_name=self.release_name)
+        export_tasks_creator = ExportContainerTasksCreator(self, export_path=None)
         export_tasks = export_tasks_creator.create_export_tasks(build_tasks)
         return export_tasks

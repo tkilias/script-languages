@@ -22,16 +22,19 @@ class CleanExaslcFlavorImages(FlavorBaseTask):
         flavor_name_extension = ":%s" % flavor_name
         self.starts_with_pattern = target_docker_repository_config().repository_name + \
                                    flavor_name_extension
-        self.register_dependency(CleanImagesStartingWith(starts_with_pattern=self.starts_with_pattern))
+        task = self.create_child_task(CleanImagesStartingWith, starts_with_pattern=self.starts_with_pattern)
+        self.register_dependency(task)
 
     def run_task(self):
         pass
+
 
 class CleanExaslcAllImages(DependencyLoggerBaseTask):
 
     def register_required(self):
         self.starts_with_pattern = target_docker_repository_config().repository_name
-        self.register_dependency(CleanImagesStartingWith(starts_with_pattern=self.starts_with_pattern))
+        task = self.create_child_task(CleanImagesStartingWith, starts_with_pattern=self.starts_with_pattern)
+        self.register_dependency(task)
 
     def run_task(self):
         pass
