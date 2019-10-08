@@ -54,7 +54,8 @@ class TestStatusPrinter():
         print(self.get_indent_str(indent) +
               f"- Tests for flavor {flavor_path}: {self.get_status_string(test_result_of_flavor.tests_are_ok)}",
               file=self.file)
-        for release_goal, test_results_of_release_goal in test_result_of_flavor.test_results_per_release_goal:
+        for release_goal, test_results_of_release_goal \
+                in test_result_of_flavor.test_results_per_release_goal.items():
             self.print_status_for_release_goal(release_goal, test_results_of_release_goal,
                                                indent=indent + STATUS_INDENT)
 
@@ -75,7 +76,7 @@ class TestStatusPrinter():
                                     indent: int):
         for test_results_for_test_files in test_result_of_flavor.test_files_output.test_results:
             print(self.get_indent_str(indent) +
-                  f"- Tests in test files"
+                  f"- Tests in test files "
                   f"with language {test_results_for_test_files.language}: "
                   f"{self.get_status_string(test_results_for_test_files.tests_are_ok)}",
                   file=self.file)
@@ -126,7 +127,8 @@ class TestContainer(FlavorsBaseTask,
         test_result = AllTestsResult(test_results_per_flavor=test_results)
         JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_results, 4)
 
-        self.print_status_for_all_tests(test_result)
+        with self.command_line_output_target.open("w") as file:
+            TestStatusPrinter(file).print_status_for_all_tests(test_result)
 
 
 class TestFlavorContainer(FlavorBaseTask,

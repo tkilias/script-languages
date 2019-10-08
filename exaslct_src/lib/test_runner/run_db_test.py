@@ -46,7 +46,7 @@ class RunDBTest(FlavorBaseTask,
         test_output = "command: " + bash_cmd + "\n" + \
                       "environment: " + str(environment) + "\n" + \
                       output.decode("utf-8")
-        is_test_ok = exit_code == 0
+        is_test_ok = (exit_code == 0)
         if log_config().write_log_files_to_console == WriteLogFilesToConsole.all:
             self.logger.info("Test results for db tests\n%s"
                              % (test_output))

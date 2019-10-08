@@ -58,7 +58,9 @@ class TestRunnerDBTestTask(FlavorBaseTask,
         self.register_spawn_test_environment()
 
     def register_export_container(self):
-        export_container_task = ExportFlavorContainer(release_goals=[self.release_goal], flavor_path=self.flavor_path)
+        export_container_task = self.create_child_task(ExportFlavorContainer,
+                                                       release_goals=[self.release_goal],
+                                                       flavor_path=self.flavor_path)
         self._export_infos_future = self.register_dependency(export_container_task)
 
     def register_spawn_test_environment(self):
@@ -78,7 +80,7 @@ class TestRunnerDBTestTask(FlavorBaseTask,
                                   self.reuse_uploaded_container and \
                                   not export_info.is_new
         database_credentials = self.get_database_credentials()
-        self.upload_container(database_credentials,
+        yield from self.upload_container(database_credentials,
                               export_info,
                               reuse_release_container)
         test_results = yield from self.run_test(self.test_environment_info)
@@ -94,7 +96,7 @@ class TestRunnerDBTestTask(FlavorBaseTask,
             reuse_uploaded=reuse_release_container,
             bucketfs_write_password=database_credentials.bucketfs_write_password
         )
-        self.run_dependencies(upload_task)
+        yield from self.run_dependencies(upload_task)
 
     def get_database_credentials(self) -> DatabaseCredentials:
         if self.environment_type == EnvironmentType.external_db:
