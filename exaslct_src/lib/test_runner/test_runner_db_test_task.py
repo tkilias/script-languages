@@ -85,6 +85,7 @@ class TestRunnerDBTestTask(FlavorBaseTask,
     def upload_container(self, database_credentials, export_info, reuse_release_container):
         upload_task = self.create_child_task_with_common_params(
             UploadExportedContainer,
+            export_info=export_info,
             environment_name=self.test_environment_info.name,
             test_environment_info=self.test_environment_info,
             release_name=export_info.name,
