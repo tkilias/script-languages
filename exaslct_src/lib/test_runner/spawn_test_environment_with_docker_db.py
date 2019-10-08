@@ -22,6 +22,8 @@ class SpawnTestEnvironmentWithDockerDB(
         return \
             self.create_child_task_with_common_params(
                 PrepareDockerNetworkForTestEnvironment,
+                test_container_name=self.test_container_name,
+                network_name=self.network_name,
                 db_container_name=self.db_container_name,
                 reuse=self.reuse_database,
                 attempt=attempt

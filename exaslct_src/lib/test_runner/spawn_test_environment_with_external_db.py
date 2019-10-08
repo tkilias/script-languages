@@ -26,6 +26,8 @@ class SpawnTestEnvironmentWithExternalDB(AbstractSpawnTestEnvironment,
         return \
             self.create_child_task_with_common_params(
                 DetermineExternalDatabaseHost,
+                test_container_name=self.test_container_name,
+                network_name=self.network_name,
                 network_info=network_info,
                 attempt=attempt
             )
