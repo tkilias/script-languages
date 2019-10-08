@@ -135,4 +135,4 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
                 test_environment_info=test_environment_info,
                 reuse_data=self.reuse_database_setup
             )]
-        self.run_dependencies(upload_tasks)
+        yield from self.run_dependencies(upload_tasks)
