@@ -3,7 +3,9 @@ import pathlib
 from typing import Generator, Any, Dict
 
 import luigi
+from luigi import LocalTarget
 
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.data.release_info import ExportInfo
 from exaslct_src.lib.docker_config import docker_client_config
@@ -80,6 +82,7 @@ class TestRunnerDBTestTask(FlavorBaseTask,
                               export_info,
                               reuse_release_container)
         test_results = yield from self.run_test(self.test_environment_info)
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_results,4)
         self.return_object(test_results)
 
     def upload_container(self, database_credentials, export_info, reuse_release_container):

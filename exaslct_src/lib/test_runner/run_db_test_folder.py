@@ -1,10 +1,11 @@
 from typing import Any, Generator
 
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_test_in_directory import RunDBTestsInDirectory
 from exaslct_src.lib.test_runner.run_db_test_result import RunDBTestFoldersResult, \
-    RunDBTestDirectoryResult
+    RunDBTestDirectoryResult, RunDBTestsInTestConfigResult
 from exaslct_src.lib.test_runner.run_db_tests_parameter import RunDBTestFolderParameter, ActualRunDBTestParameter
 
 
@@ -32,5 +33,6 @@ class RunDBTestFolder(FlavorBaseTask,
             directory=test_folder,
         )
         test_result_future = yield from self.run_dependencies(task)
-        test_result = self.get_values_from_future(test_result_future)
+        test_result = self.get_values_from_future(test_result_future) # type: RunDBTestDirectoryResult
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_result, 4)
         return test_result

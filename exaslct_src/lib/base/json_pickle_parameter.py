@@ -13,6 +13,7 @@ class JsonPickleParameter(Parameter):
         self.cls = cls
 
     def parse(self, s):
+        jsonpickle.set_preferred_backend('simplejson')
         loaded_object = jsonpickle.decode(s)
         if not isinstance(loaded_object, self.cls):
             raise TypeError("Type %s of loaded object does not match %s" % (type(loaded_object), self.cls))

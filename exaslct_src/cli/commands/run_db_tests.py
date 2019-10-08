@@ -167,13 +167,10 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                          external_exasol_db_password=external_exasol_db_password,
                                          external_exasol_bucketfs_write_password=external_exasol_bucketfs_write_password)
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
-    # if success:
-    #     target = luigi.LocalTarget(
-    #         "%s/logs/test-runner/db-test/tests/current" % (output_directory))
-    #
-    #     print("Test Results:")
-    #     with target.open("r") as f:
-    #         print(f.read())
+    if success:
+        print("Test Results:")
+        with task.command_line_output_target.open("r") as f:
+            print(f.read())
 
 
 def handle_commandline_error(error):

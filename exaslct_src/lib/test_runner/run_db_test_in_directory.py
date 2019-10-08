@@ -3,6 +3,7 @@ from typing import List, Generator, Any
 import luigi
 from docker.models.containers import Container
 
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
@@ -34,6 +35,7 @@ class RunDBTestsInDirectory(FlavorBaseTask,
         result = RunDBTestDirectoryResult(test_results=test_results,
                                           language=self.language,
                                           test_folder=self.directory)
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_results, 4)
         self.return_object(result)
 
     def run_tests(self) -> Generator[RunDBTest, Any, List[RunDBTestResult]]:

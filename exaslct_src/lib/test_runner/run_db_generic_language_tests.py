@@ -1,5 +1,6 @@
 from typing import Any, Generator
 
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_test_in_directory import RunDBTestsInDirectory
@@ -21,6 +22,7 @@ class RunDBGenericLanguageTest(FlavorBaseTask,
         for language in self.generic_language_tests:
             test_result = yield from self.run_test(language, "generic")
             results.append(test_result)
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_result, 4)
         self.return_object(RunDBTestFoldersResult(test_results=results))
 
     def run_test(self, language: str, test_folder: str) -> \

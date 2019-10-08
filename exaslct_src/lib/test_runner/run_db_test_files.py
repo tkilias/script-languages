@@ -1,5 +1,6 @@
 from typing import Any, Generator
 
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_test import RunDBTest
@@ -26,6 +27,7 @@ class RunDBTestFiles(FlavorBaseTask,
                 results_for_language.append(test_result)
             results.append(RunDBTestCollectionResult(language=language,
                                                      test_results=results_for_language))
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_result, 4)
         self.return_object(RunDBTestFilesResult(test_results=results))
 
     def run_test(self, language: str, test_file: str) -> \

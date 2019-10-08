@@ -8,8 +8,8 @@ class RunDBTestResult():
                  language: str,
                  is_test_ok: bool,
                  test_output_file: Path):
-        self.test_output_file = test_output_file
-        self.test_file = test_file
+        self.test_output_file = str(test_output_file)
+        self.test_file = str(test_file)
         self.is_ok = is_test_ok
         self.language = language
 
@@ -52,7 +52,7 @@ class RunDBTestsInTestConfigResult():
                  test_folders_output: RunDBTestFoldersResult,
                  test_files_output: RunDBTestFilesResult):
         self.release_goal = release_goal
-        self.flavor_path = flavor_path
+        self.flavor_path = str(flavor_path)
         self.test_files_output = test_files_output
         self.test_folders_output = test_folders_output
         self.generic_language_tests_output = generic_language_tests_output
