@@ -1,10 +1,14 @@
+import hashlib
+import json
 import logging
 from pathlib import Path
 from typing import Dict, List, Generator, Any, Union
 
 import luigi
+import six
 from luigi import Task, util
 from luigi.parameter import ParameterVisibility
+from luigi.task import TASK_ID_TRUNCATE_HASH
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.base.abstract_task_future import AbstractTaskFuture, DEFAULT_RETURN_OBJECT_NAME
@@ -69,11 +73,41 @@ class BaseTask(Task):
         self._registered_return_targets = {}
         self._task_state = TaskState.INIT
         super().__init__(*args, **kwargs)
+        self.task_id = self.task_id_str(self.get_task_family(),
+                                        self.get_parameter_as_string_dict())
+        self.__hash = hash(self.task_id)
         logger = logging.getLogger(f'luigi-interface.{self.__class__.__name__}')
         self.logger = TaskLoggerWrapper(logger, self.__repr__())
         self._complete_target = PickleTarget(path=self._get_tmp_path_for_completion_target())
         self.register_required()
         self._task_state = TaskState.NONE
+
+    def task_id_str(self, task_family, params):
+        """
+        Returns a canonical string used to identify a particular task
+
+        :param task_family: The task family (class name) of the task
+        :param params: a dict mapping parameter names to their serialized values
+        :return: A unique, shortened identifier corresponding to the family and params
+        """
+        # task_id is a concatenation of task family, the first values of the first 3 parameters
+        # sorted by parameter name and a md5hash of the family/parameters as a cananocalised json.
+        param_str = json.dumps(params, separators=(',', ':'), sort_keys=True)
+        hash_input = job_config().job_id + param_str
+        param_hash = hashlib.sha3_256(hash_input.encode('utf-8')).hexdigest()
+        print("my id", param_hash)
+        return '{}_{}'.format(task_family, param_hash[:TASK_ID_TRUNCATE_HASH])
+
+    def get_parameter_as_string_dict(self):
+        """
+        Convert all parameters to a str->str hash.
+        """
+        params_str = {}
+        params = dict(self.get_params())
+        for param_name, param_value in six.iteritems(self.param_kwargs):
+            if (params[param_name].significant):
+                params_str[param_name] = params[param_name].serialize(param_value)
+        return params_str
 
     def _get_tmp_path_for_returns(self, name: str) -> Path:
         return Path(self._get_tmp_path_for_task(), RETURN_TARGETS, name)
@@ -224,7 +258,7 @@ class BaseTask(Task):
                     param_objs[param_name].visibility == ParameterVisibility.PUBLIC:
                 repr_parts.append('%s=%s' % (param_name, param_objs[param_name].serialize(param_value)))
 
-        task_str = '{}({})'.format(self.get_task_family(), ', '.join(repr_parts))
+        task_str = '{}({})'.format(self.task_id, ', '.join(repr_parts))
 
         return task_str
 

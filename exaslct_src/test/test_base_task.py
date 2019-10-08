@@ -24,8 +24,8 @@ class TestTask1(TestBaseTask):
         self.logger.info(f"task2 list_outputs {self.task2.list_outputs()}")
         self.logger.info(f"task2 {self.task2.get_output()}")
         tasks_3 = yield from self.run_dependencies({
-            "1": TestTask3("e"),
-            "2": TestTask3("d"),
+            "1": TestTask3(input_param="e"),
+            "2": TestTask3(input_param="d"),
         })
         self.logger.info(f"""task3_1 {tasks_3["1"].get_output("output")}""")
         self.logger.info(f"""task3_2 {tasks_3["2"].get_output("output")}""")
@@ -148,7 +148,7 @@ class BaseTaskTest(unittest.TestCase):
 
     def test_common_parameter(self):
         self.set_job_id(TestTask7)
-        task = TestTask7("input")
+        task = TestTask7(test_parameter="input")
         luigi.build([task], workers=1, local_scheduler=True, log_level="INFO")
         if task._get_tmp_path_for_job().exists():
             shutil.rmtree(str(task._get_tmp_path_for_job()))
