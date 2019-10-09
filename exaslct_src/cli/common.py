@@ -11,7 +11,7 @@ import networkx
 from networkx import DiGraph
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-from exaslct_src.lib.stoppable_task import StoppableTask
+
 from exaslct_src.lib.task_dependency import TaskDependency, DependencyState
 
 
@@ -105,10 +105,6 @@ def handle_failure(task: DependencyLoggerBaseTask, task_dependencies_dot_file: s
     generate_graph_from_task_dependencies(task, task_dependencies_dot_file)
     timedelta = datetime.now() - start_time
     print("The command failed after %s s with:" % timedelta.total_seconds())
-    if task.failed_target.exists():
-        with task.failed_target.open("r") as file:
-            print(file.read())
-
 
 def handle_success(task: DependencyLoggerBaseTask, task_dependencies_dot_file: str, start_time: datetime):
     generate_graph_from_task_dependencies(task, task_dependencies_dot_file)

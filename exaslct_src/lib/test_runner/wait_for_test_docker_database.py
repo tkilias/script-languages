@@ -109,8 +109,8 @@ class WaitForTestDockerDatabase(DependencyLoggerBaseTask, DatabaseCredentialsPar
 {container_log}
 """
         self.logger.warning(
-            'Task %s: Database startup failed for following reason "%s", here some debug information \n%s',
-            self.__repr__(), reason, log_information)
+            'Database startup failed for following reason "%s", here some debug information \n%s',
+            reason, log_information)
 
     def timeout_occured(self, start_time):
         timeout = timedelta(seconds=self.db_startup_timeout_in_seconds)

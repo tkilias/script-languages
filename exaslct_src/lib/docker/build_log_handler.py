@@ -38,7 +38,6 @@ class BuildLogHandler(AbstractLogHandler):
 
     def handle_error(self):
         if self._error_message is not None:
-            print(self._error_message)
             self.write_error_log_to_console_if_requested()
             raise docker.errors.BuildError(
                 "Error occurred during the build of the image %s. Received error \"%s\" ."

@@ -79,7 +79,7 @@ class UploadFileToBucketFS(DependencyLoggerBaseTask):
                 database_container=database_container,
                 log_file_to_check=log_file,
                 pattern_to_wait_for=pattern_to_wait_for,
-                task_id=self.__repr__(),
+                logger=self.logger,
                 bucketfs_write_password=self.bucketfs_write_password
             )
         else:

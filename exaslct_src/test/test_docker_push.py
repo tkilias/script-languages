@@ -1,6 +1,10 @@
+import json
+import time
 import unittest
 
 import docker
+import requests
+from requests import request
 
 from exaslct_src.test import utils
 
@@ -24,6 +28,7 @@ class DockerPushTest(unittest.TestCase):
                 ports={5000: self.registry_port},
                 detach=True
             )
+            time.sleep(10)
             print(f"Finished start container of {registry_container_name}")
             self.test_environment.repository_prefix = f"localhost:{self.registry_port}"
         finally:
@@ -33,7 +38,19 @@ class DockerPushTest(unittest.TestCase):
         print(f"SetUp {self.__class__.__name__}")
         self.test_environment = utils.ExaslctTestEnvironment(self)
         self.create_registry()
+        print("registry:", self.request_registry_repositories())
         self.test_environment.clean_images()
+
+    def request_registry_images(self, repo_name):
+        url = f"http://localhost:{self.registry_port}/v2/{repo_name}/tags/list"
+        result = requests.request("GET", url)
+        images = json.loads(result.content.decode("UTF-8"))
+        return images
+
+    def request_registry_repositories(self):
+        result = requests.request("GET", f"http://localhost:{self.registry_port}/v2/_catalog/")
+        repositories_ = json.loads(result.content.decode("UTF-8"))["repositories"]
+        return repositories_
 
     def tearDown(self):
         utils.remove_docker_container([self.registry_container.id])
@@ -41,7 +58,10 @@ class DockerPushTest(unittest.TestCase):
 
     def test_docker_push(self):
         command = f"./exaslct push "
-        self.test_environment.run_command(command,track_task_dependencies=True)
+        self.test_environment.run_command(command, track_task_dependencies=True)
+        print("repos:", self.request_registry_repositories())
+        print("images", self.request_registry_images("dockerpushtest"))
+
 
 if __name__ == '__main__':
     unittest.main()

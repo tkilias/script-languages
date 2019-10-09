@@ -14,7 +14,7 @@ from exaslct_src.lib.data.image_info import ImageInfo, ImageState
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.log_config import log_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
-from exaslct_src.lib.stoppable_task import StoppableTask
+
 
 DOCKER_HUB_REGISTRY_URL_REGEX = r"^.*docker.io/"
 

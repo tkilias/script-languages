@@ -89,7 +89,7 @@ class TimeableBaseTask(BaseTask):
                 start_time_str = f.read()
             start_time = datetime.fromtimestamp(float(start_time_str))
             timedelta = now - start_time
-            self.logger.info("Task %s: Time since first_run %s s", self.__repr__(), timedelta.total_seconds())
+            self.logger.info("Time since first_run %s s", timedelta.total_seconds())
             with self._get_timers_first_run_result_path().open("w") as f:
                 f.write(str(timedelta.total_seconds()))
                 f.write("\n")
@@ -99,7 +99,7 @@ class TimeableBaseTask(BaseTask):
         if state_path.exists():
             with state_path.open("r") as f:
                 total_runtime = self.calculate_total_runtime(f.readlines())
-            self.logger.info("Task %s: Total runtime of run method %s s", self.__repr__(), total_runtime)
+            self.logger.info("Total runtime of run method %s s", total_runtime)
             with self._get_timers_runs_result_path().open("w") as f:
                 f.write(str(total_runtime))
                 f.write("\n")

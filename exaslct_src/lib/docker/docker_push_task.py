@@ -34,6 +34,7 @@ class DockerPushImageBaseTask(DependencyLoggerBaseTask):
         image_info = self.get_values_from_future(self._image_info_future)
         was_build = image_info.image_state == ImageState.WAS_BUILD.name
         if was_build or self.force_push:
+            self.logger.info("Push images")
             auth_config = {
                 "username": target_docker_repository_config().username,
                 "password": target_docker_repository_config().password

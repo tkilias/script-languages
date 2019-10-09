@@ -204,6 +204,7 @@ class BaseTask(Task):
             if task_generator is not None:
                 yield from task_generator
             self._task_state = TaskState.NONE
+            self.logger.info("Write complete_target")
             self._complete_target.write(self._registered_return_targets)
         except Exception as e:
             self.logger.exception("Exception in run: %s", e)

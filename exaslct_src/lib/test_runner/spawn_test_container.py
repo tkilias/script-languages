@@ -17,7 +17,7 @@ from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.test_runner.create_export_directory import CreateExportDirectory
-from exaslct_src.lib.stoppable_task import StoppableTask
+
 
 
 class SpawnTestContainer(DependencyLoggerBaseTask):
@@ -64,8 +64,8 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
 
     def _try_to_reuse_test_container(self, ip_address: str,
                                      network_info: DockerNetworkInfo) -> ContainerInfo:
-        self.logger.info("Task %s: Try to reuse test container %s",
-                         self.__repr__(), self.test_container_name)
+        self.logger.info("Try to reuse test container %s",
+                         self.test_container_name)
         container_info = None
         try:
             network_aliases = self._get_network_aliases()

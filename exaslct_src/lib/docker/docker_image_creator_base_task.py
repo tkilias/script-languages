@@ -1,14 +1,9 @@
-import logging
-
 import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.image_info import ImageInfo
-from exaslct_src.lib.docker.docker_image_target import DockerImageTarget
 from exaslct_src.lib.docker_config import docker_client_config
-from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 class DockerImageCreatorBaseTask(DependencyLoggerBaseTask):

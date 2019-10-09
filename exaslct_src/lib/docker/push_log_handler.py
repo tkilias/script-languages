@@ -16,9 +16,8 @@ class PushLogHandler(AbstractLogHandler):
         log_line = log_line.strip('\r\n')
         json_output = json.loads(log_line)
         if "status" in json_output and json_output["status"] != "Pushing":
-            print(json_output)
-            self._complete_log.append(json_output["stream"])
-            self._log_file.write(json_output["stream"])
+            self._complete_log.append(json_output["status"])
+            self._log_file.write(json_output["status"])
             self._log_file.write("\n")
         if 'errorDetail' in json_output:
             self._error_message = json_output["errorDetail"]["message"]

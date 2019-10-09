@@ -127,7 +127,6 @@ class BaseTaskTest(unittest.TestCase):
     def set_job_id(self, task_cls):
         strftime = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         job_id = f"{strftime}_{task_cls.__name__}"
-        print(job_id)
         config = luigi.configuration.get_config()
         config.set('job_config', 'job_id', job_id)
         # config.reload()

@@ -21,8 +21,8 @@ class DockerCreateImageTask(DependencyLoggerBaseTask):
                                      significant=True)  # type: ImageInfo
 
     def run_task(self):
-        yield from self.build(self.image_info)
-        self.return_object(self.image_info)
+        new_image_info = yield from self.build(self.image_info)
+        self.return_object(new_image_info)
 
     def build(self, image_info: ImageInfo):
         if image_info.image_state == ImageState.NEEDS_TO_BE_BUILD.name:
@@ -30,24 +30,29 @@ class DockerCreateImageTask(DependencyLoggerBaseTask):
                                           image_name=self.image_name,
                                           image_info=image_info)
             yield from self.run_dependencies(task)
-            image_info.image_state = ImageState.WAS_BUILD.name
+            image_info.image_state = ImageState.WAS_BUILD.name # TODO clone and change
+            return image_info
         elif image_info.image_state == ImageState.CAN_BE_LOADED.name:
             task = self.create_child_task(DockerLoadImageTask,
                                           image_name=self.image_name,
                                           image_info=image_info)
             yield from self.run_dependencies(task)
             image_info.image_state = ImageState.WAS_LOADED.name
+            return image_info
         elif image_info.image_state == ImageState.REMOTE_AVAILABLE.name:
             task = self.create_child_task(DockerPullImageTask,
                                           image_name=self.image_name,
                                           image_info=image_info)
             yield from self.run_dependencies(task)
             image_info.image_state = ImageState.WAS_PULLED.name
+            return image_info
         elif image_info.image_state == ImageState.TARGET_LOCALLY_AVAILABLE.name:
             image_info.image_state = ImageState.USED_LOCAL.name
+            return image_info
         elif image_info.image_state == ImageState.SOURCE_LOCALLY_AVAILABLE.name:
             image_info.image_state = ImageState.WAS_TAGED.name
             self.rename_source_image_to_target_image(image_info)
+            return image_info
         else:
             raise Exception("Task %s: Image state %s not supported for image %s",
                             self.task_id, image_info.image_state, image_info.get_target_complete_name())
@@ -81,5 +86,5 @@ class DockerCreateImageTaskWithDeps(DockerCreateImageTask):
         image_infos = self.get_values_from_futures(self.futures)
         image_info = copy.copy(self.image_info)
         image_info.depends_on_images = image_infos
-        yield from self.build(image_info)
-        self.return_object(self.image_info)
+        new_image_info = yield from self.build(image_info)
+        self.return_object(new_image_info)

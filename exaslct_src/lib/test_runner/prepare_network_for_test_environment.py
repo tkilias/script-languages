@@ -1,14 +1,9 @@
-import logging
-
 import docker
 import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.data.dependency_collector.dependency_docker_network_info_collector import DOCKER_NETWORK_INFO
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.docker_config import docker_client_config
-from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 class PrepareDockerNetworkForTestEnvironment(DependencyLoggerBaseTask):

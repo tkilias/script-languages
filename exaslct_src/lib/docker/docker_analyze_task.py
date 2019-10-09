@@ -35,7 +35,7 @@ class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
         )
         self._dockerfile = self.get_dockerfile()
         self._build_context_hasher = \
-            BuildContextHasher(self.__repr__(),
+            BuildContextHasher(self.logger,
                                self.image_description)
 
     def __del__(self):
@@ -150,8 +150,7 @@ class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
             sha = repo.head.object.hexsha
             return sha
         except Exception as e:
-            self.logger.info("Task %s_ Not a Git Repository, can't determine the commit id for the image_info",
-                             self.__repr__())
+            self.logger.info("Not a Git Repository, can't determine the commit id for the image_info")
             return ""
 
     def get_image_state(self,
@@ -189,14 +188,14 @@ class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
     def is_image_locally_available(self, image_target: DockerImageTarget):
         exists = image_target.exists()
         self.logger.info(
-            f"Task {self.__repr__()}: Checking if image {image_target.get_complete_name()} "
+            f"Checking if image {image_target.get_complete_name()} "
             f"is locally available, result {exists}")
         return exists
 
     def can_image_be_loaded(self, image_target: DockerImageTarget):
         if build_config().cache_directory is not None:
             image_path = self.get_path_to_cached_image(image_target)
-            self.logger.info(f"Task {self.__repr__()}: Checking if image archive {image_path} "
+            self.logger.info(f"Checking if image archive {image_path} "
                              f"is available in cache directory, "
                              f"result {image_path.exists()}")
             return image_path.exists()
@@ -211,14 +210,14 @@ class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
 
     def is_image_in_registry(self, image_target: DockerImageTarget):
         try:
-            self.logger.info("Task %s: Try to find image %s in registry", self.__repr__(),
+            self.logger.info("Try to find image %s in registry",
                              image_target.get_complete_name())
             exists = DockerRegistryImageChecker().check(image_target.get_complete_name())
             if exists:
-                self.logger.info("Task %s: Found image %s in registry", self.__repr__(),
+                self.logger.info("Found image %s in registry",
                                  image_target.get_complete_name())
             return exists
         except docker.errors.DockerException as e:
-            self.logger.warning("Task %s: Image %s not in registry, got exception %s", self.__repr__(),
+            self.logger.warning("Image %s not in registry, got exception %s",
                                 image_target.get_complete_name(), e)
             return False

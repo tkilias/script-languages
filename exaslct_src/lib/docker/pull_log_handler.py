@@ -18,8 +18,8 @@ class PullLogHandler(AbstractLogHandler):
         if "status" in json_output \
                 and json_output["status"] != "Downloading" \
                 and json_output["status"] != "Extracting":
-            self._complete_log.append(log_line)
-            self._log_file.write(log_line)
+            self._complete_log.append(json_output["status"])
+            self._log_file.write(json_output["status"])
             self._log_file.write("\n")
             self._log_file.flush()
         if 'errorDetail' in json_output:

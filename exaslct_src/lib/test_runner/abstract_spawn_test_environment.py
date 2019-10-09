@@ -1,23 +1,11 @@
-import logging
-from typing import Dict
-
 import luigi
-from luigi import LocalTarget
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.data.dependency_collector.dependency_container_info_collector import \
-    DependencyContainerInfoCollector
-from exaslct_src.lib.data.dependency_collector.dependency_database_info_collector import DependencyDatabaseInfoCollector
-from exaslct_src.lib.data.dependency_collector.dependency_docker_network_info_collector import \
-    DependencyDockerNetworkInfoCollector
-from exaslct_src.lib.data.dependency_collector.dependency_environment_info_collector import ENVIRONMENT_INFO
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
-from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.general_spawn_test_environment_parameter import GeneralSpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.populate_data import PopulateEngineSmallTestDataToDatabase
