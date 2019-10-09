@@ -66,4 +66,4 @@ def push(flavor_path: Tuple[str, ...],
                                 flavor_paths=list(flavor_path))
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
     if not success:
-        exit(-1)
+        exit(1)

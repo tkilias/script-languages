@@ -51,4 +51,4 @@ def spawn_test_environment(
     set_job_id(SpawnTestEnvironmentWithDockerDB.__name__)
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
     if not success:
-        exit(-1)
+        exit(1)

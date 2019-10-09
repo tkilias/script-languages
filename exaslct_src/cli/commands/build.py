@@ -70,4 +70,4 @@ def build(flavor_path: Tuple[str, ...],
     task_creator = lambda: DockerBuild(flavor_paths=list(flavor_path), goals=list(goal), shortcut_build=shortcut_build)
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
     if not success:
-        exit(-1)
+        exit(1)

@@ -72,4 +72,4 @@ def save(save_directory: str,
                                       goals=list(goal))
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
     if not success:
-        exit(-1)
+        exit(1)

@@ -130,6 +130,9 @@ class TestContainer(FlavorsBaseTask,
         with self.command_line_output_target.open("w") as file:
             TestStatusPrinter(file).print_status_for_all_tests(test_result)
 
+        if not test_result.tests_are_ok:
+            raise Exception("Some tests failed")
+
 
 class TestFlavorContainer(FlavorBaseTask,
                           TestContainerParameter,

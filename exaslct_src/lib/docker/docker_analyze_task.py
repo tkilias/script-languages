@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Type
 
 import docker
 import git
@@ -113,10 +113,30 @@ class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
         raise AbstractMethodException()
 
     def register_required(self):
-        tasks = self.requires_tasks()
+        task_classes = self.requires_tasks()
+        if task_classes is not None:
+            if not isinstance(task_classes, dict) or \
+                    not self.keys_are_string(task_classes) or \
+                    not self.values_are_subclass_of_baseclass(task_classes):
+                print(isinstance(task_classes, dict),
+                      self.keys_are_string(task_classes),
+                      self.values_are_subclass_of_baseclass(task_classes))
+                raise TypeError(f"Expected Dict[str,DockerAnalyzeImageTask] got {task_classes}")
+            tasks = {key: self.create_child_task_with_common_params(value)
+                     for key, value in task_classes.items()}
+        else:
+            tasks = None
         self.dependencies_futures = self.register_dependencies(tasks)
 
-    def requires_tasks(self):
+    def keys_are_string(self, task_classes):
+        return all(isinstance(key, str)
+                   for key in task_classes.keys())
+
+    def values_are_subclass_of_baseclass(self, task_classes):
+        return all(issubclass(value, DockerAnalyzeImageTask)
+                   for value in task_classes.values())
+
+    def requires_tasks(self) -> Dict[str, Type["DockerAnalyzeImageTask"]]:
         pass
 
     def run_task(self):

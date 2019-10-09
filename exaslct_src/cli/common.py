@@ -93,7 +93,9 @@ def run_task(task_creator: Callable[[], DependencyLoggerBaseTask],
     start_time = datetime.now()
     task = task_creator()
     no_scheduling_errors = luigi.build([task], workers=workers, local_scheduler=True, log_level="INFO")
-    if not task.failed_target.exists() and no_scheduling_errors:
+    print("error",task.failed_target.exists(),no_scheduling_errors)
+    success = not task.failed_target.exists() and no_scheduling_errors
+    if success:
         handle_success(task, task_dependencies_dot_file, start_time)
         return True, task
     else:
