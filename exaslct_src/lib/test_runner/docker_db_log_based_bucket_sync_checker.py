@@ -18,7 +18,6 @@ class DockerDBLogBasedBucketFSSyncChecker(BucketFSSyncChecker):
         self.pattern_to_wait_for = pattern_to_wait_for
         self.log_file_to_check = log_file_to_check
         self.database_container = database_container
-        self.task_id = task_id
         self.bucketfs_write_password = bucketfs_write_password
 
     def prepare_upload(self):

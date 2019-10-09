@@ -86,7 +86,7 @@ class TestStatusPrinter():
                                       indent: int):
         for test_results_for_test_folder in test_result_of_flavor.test_folders_output.test_results:
             print(self.get_indent_str(indent) +
-                  f"- Tests in test folder {test_results_for_test_folder.test_folder}"
+                  f"- Tests in test folder {test_results_for_test_folder.test_folder} "
                   f"with language {test_results_for_test_folder.test_folder}: "
                   f"{self.get_status_string(test_results_for_test_folder.tests_are_ok)}",
                   file=self.file)
